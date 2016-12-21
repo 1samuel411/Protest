@@ -23,7 +23,7 @@ public class Base : MonoBehaviour
     {
         get
         {
-            if(_rectTransform == null)
+            if (_rectTransform == null)
                 _rectTransform = GetComponent<RectTransform>();
             return _rectTransform;
         }

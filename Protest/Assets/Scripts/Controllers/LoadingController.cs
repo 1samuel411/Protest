@@ -7,12 +7,12 @@ public class LoadingController : Controller
 
     public new static LoadingController instance;
 
-    public LoadingView view_parent;
+    private LoadingView _View;
 
     void Awake()
     {
         instance = this;
-        view_parent = view.GetComponent<LoadingView>();
+        _View = view.GetComponent<LoadingView>();
     }
 
     public void LoginFacebook()
@@ -30,7 +30,7 @@ public class LoadingController : Controller
         Log.Create(2, "Login response: " + response, "LoadingController");
         if (response == 0)
         {
-            view_parent.loading = true;
+            _View.loading = true;
             ProtestListController.instance.Load(LoadCallback);
         }
     }

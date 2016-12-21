@@ -17,6 +17,8 @@ public class ProtestListView : View
 
     public bool viewMenuBar;
 
+    public RectTransform listHolder;
+
     void Update()
     {
         UpdateUI();
@@ -26,6 +28,10 @@ public class ProtestListView : View
 
         if (viewMenuBar && SwipeDetection.instance.swipeDirection == SwipeDetection.SwipeDirections.left)
             HideMenu();
+
+
+        if (listHolder.anchoredPosition.y <= 0 && SwipeDetection.instance.swipeDirection == SwipeDetection.SwipeDirections.down)
+            ProtestListController.instance.PopulateList();
     }
 
     private void UpdateUI()

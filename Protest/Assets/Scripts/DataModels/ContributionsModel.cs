@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-public class ContributionsModel
+public class ContributionsModel : Model
 {
 
     public int index;
