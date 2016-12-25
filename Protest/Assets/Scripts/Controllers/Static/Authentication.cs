@@ -12,15 +12,32 @@ public class Authentication : Base
 
     public static bool authenticated;
 
-    private static string localKey = "SessionKey";
+    private static string localKey = "SessionKeys";
 
-    public UserModel ourModel;
+    public static UserModel user
+    {
+        get
+        {
+            if (authenticated)
+                return DataParser.GetUser(auth_token);
+            else
+                return null;
+        }
+    }
 
     void Awake()
     {
         if(PlayerPrefs.HasKey(localKey))
         {
             Authenticate(PlayerPrefs.GetString(localKey));
+        }
+    }
+
+    public void Update()
+    {
+        if(!authenticated)
+        {
+            LoadingController.instance.Show();
         }
     }
 
@@ -32,7 +49,7 @@ public class Authentication : Base
        
         // Login to facebook and return the key to call the authenticate method
 
-        Authenticate();
+        Authenticate("");
         
         callback.Invoke(response);
     }
@@ -42,21 +59,9 @@ public class Authentication : Base
         int response = 0;
         // Login to facebook and return the key to call the authenticate method
 
-        Authenticate();
+        Authenticate("");
 
         callback.Invoke(response);
-    }
-
-    public static void Authenticate(string fbKey = "", string googleKey = "")
-    {
-        // Set session key on user with the fbKey or googleKey
-
-        // return userModel
-
-        authenticated = true;
-        auth_token = GenerateSessionKey();
-        PlayerPrefs.SetString(localKey, auth_token);
-        Log.Create(2, "Authentication Successful", "Authentication", auth_token);
     }
 
     public static void Authenticate(string sessionKey)
@@ -64,8 +69,7 @@ public class Authentication : Base
         Log.Create(2, "Authentication Checking Session: " + sessionKey, "Authentication");
 
         // Search for session key
-
-        // return usermodel
+        
 
         authenticated = true;
         auth_token = sessionKey;
@@ -94,18 +98,5 @@ public class Authentication : Base
             randomString += character[UnityEngine.Random.Range(0, character.Length - 1)];
         }
         return (randomString + "|" + now.ToShortDateString() + "|" + now.ToShortTimeString() + "|" + now.Millisecond).Replace(' ', '_');
-    }
-
-    public static string MD5Hash(string input)
-    {
-        StringBuilder hash = new StringBuilder();
-        MD5CryptoServiceProvider md5provider = new MD5CryptoServiceProvider();
-        byte[] bytes = md5provider.ComputeHash(new UTF8Encoding().GetBytes(input));
-
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            hash.Append(bytes[i].ToString("x2"));
-        }
-        return hash.ToString();
     }
 }

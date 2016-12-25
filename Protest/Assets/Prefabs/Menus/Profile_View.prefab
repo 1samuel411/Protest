@@ -106,13 +106,14 @@ GameObject:
   - component: {fileID: 223188026468105286}
   - component: {fileID: 114162531696525542}
   - component: {fileID: 114584707929192872}
+  - component: {fileID: 114226807892090590}
   m_Layer: 5
   m_Name: Profile_View
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1134527950446646
 GameObject:
   m_ObjectHideFlags: 1
@@ -617,6 +618,7 @@ GameObject:
   - component: {fileID: 222365616591505668}
   - component: {fileID: 114713640605748674}
   - component: {fileID: 114784551464690090}
+  - component: {fileID: 114481240347104008}
   m_Layer: 5
   m_Name: FollowBtn
   m_TagString: Untagged
@@ -786,7 +788,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114324389293874330}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114226807892090590}
+        m_MethodName: OpenFollowing
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114041288260288202
@@ -1025,6 +1038,32 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114226807892090590
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1100208105364142}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d09ff525c42405643972934082fff19a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  profileImage: {fileID: 114476452715538930}
+  nameText: {fileID: 114490875459437020}
+  bioText: {fileID: 114268483358865120}
+  editButton: {fileID: 114791993282128492}
+  flagButton: {fileID: 114455575618990178}
+  followButton: {fileID: 114784551464690090}
+  snapchatButton: {fileID: 114060202887774040}
+  facebookButton: {fileID: 114556684666106346}
+  instagramButton: {fileID: 114462918704567252}
+  twitterButton: {fileID: 114325194475889774}
+  followersText: {fileID: 114421316288231556}
+  followingText: {fileID: 114324389293874330}
+  attendedText: {fileID: 114807281159258140}
+  createdText: {fileID: 114722235506320866}
+  protestsHolder: {fileID: 224496546390082804}
 --- !u!114 &114266171492363084
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1044,7 +1083,7 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 130.08368, y: 130.08368}
+  m_CellSize: {x: 130.07782, y: 130.07782}
   m_Spacing: {x: 2, y: 2}
   m_Constraint: 0
   m_ConstraintCount: 3
@@ -1146,7 +1185,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114722235506320866}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114226807892090590}
+        m_MethodName: OpenProtestsCreated
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114324389293874330
@@ -1506,6 +1556,24 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114481240347104008
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1837663817215236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1679637790, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreLayout: 0
+  m_MinWidth: 200
+  m_MinHeight: -1
+  m_PreferredWidth: -1
+  m_PreferredHeight: -1
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
 --- !u!114 &114490875459437020
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1699,7 +1767,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114397526037402792}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114226807892090590}
+        m_MethodName: Return
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114556684666106346
@@ -2089,7 +2168,7 @@ MonoBehaviour:
   m_Spacing: -3.6
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
+  m_ChildControlWidth: 1
   m_ChildControlHeight: 1
 --- !u!114 &114769091353402690
 MonoBehaviour:
@@ -2303,7 +2382,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114421316288231556}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114226807892090590}
+        m_MethodName: OpenFollowers
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114902517501106404
@@ -2371,7 +2461,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114807281159258140}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 114226807892090590}
+        m_MethodName: OpenAttended
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114993345918157436
@@ -2934,10 +3035,10 @@ RectTransform:
   m_Father: {fileID: 224882867000948026}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 42.73, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 379.13086, y: -16.999977}
+  m_SizeDelta: {x: 42.38144, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224301666911174626
 RectTransform:
@@ -3012,7 +3113,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: -258}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &224503024905728798
 RectTransform:
@@ -3187,10 +3288,10 @@ RectTransform:
   m_Father: {fileID: 224882867000948026}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 199.85164, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -16.999977}
+  m_SizeDelta: {x: 200, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224696267891551594
 RectTransform:
@@ -3205,10 +3306,10 @@ RectTransform:
   m_Father: {fileID: 224882867000948026}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 57.1, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 284.26776, y: -16.999977}
+  m_SizeDelta: {x: 76.98191, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224716611961277956
 RectTransform:
@@ -3223,10 +3324,10 @@ RectTransform:
   m_Father: {fileID: 224882867000948026}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 49.9, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 222.8884, y: -16.999977}
+  m_SizeDelta: {x: 52.9768, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224775683715755492
 RectTransform:
@@ -3241,10 +3342,10 @@ RectTransform:
   m_Father: {fileID: 224882867000948026}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 41.6, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 340.34943, y: -16.999977}
+  m_SizeDelta: {x: 42.38144, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224794879749804898
 RectTransform:

@@ -37,6 +37,8 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 224460956394236858}
+  - component: {fileID: 114611368990314072}
+  - component: {fileID: 114512925901349576}
   m_Layer: 5
   m_Name: Contributions_List
   m_TagString: Untagged
@@ -353,6 +355,21 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
+--- !u!114 &114512925901349576
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1234089731938950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd3206c50457167409ef4861355aaafe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nameText: {fileID: 114863461076446134}
+  progress: {fileID: 114399678579222864}
+  AddButton: {fileID: 114543415145401542}
+  RemoveButton: {fileID: 114269905170928712}
 --- !u!114 &114522144907108814
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -427,6 +444,18 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
+--- !u!114 &114611368990314072
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1234089731938950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f2f106642bd42a45a042095b847d2d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inUse: 0
 --- !u!114 &114660888030928486
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class ContributionsModel : Model
 {
 
@@ -10,11 +11,9 @@ public class ContributionsModel : Model
     public int amountNeeded;
     public int currentAmount;
 
-    public ProtestModel protest;
+    public int protest;
 
-    public UserModel[] contributers;
-
-	public ContributionsModel(int index, string name, int amountNeeded, int currentAmount, ProtestModel protest, UserModel[] contributers)
+	public ContributionsModel(int index, string name, int amountNeeded, int currentAmount, int protest)
     {
         this.index = index;
 
@@ -23,7 +22,5 @@ public class ContributionsModel : Model
         this.currentAmount = currentAmount;
 
         this.protest = protest;
-
-        this.contributers = contributers;
     }
 }

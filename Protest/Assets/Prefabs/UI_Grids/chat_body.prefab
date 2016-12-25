@@ -21,6 +21,8 @@ GameObject:
   - component: {fileID: 224649424871354046}
   - component: {fileID: 222215160453192282}
   - component: {fileID: 114111754325443294}
+  - component: {fileID: 114196121802728134}
+  - component: {fileID: 114967937787838718}
   m_Layer: 5
   m_Name: chat_body
   m_TagString: Untagged
@@ -61,6 +63,30 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: comment
+--- !u!114 &114196121802728134
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1370090711786072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f2f106642bd42a45a042095b847d2d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inUse: 0
+--- !u!114 &114967937787838718
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1370090711786072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4e2adbdf77bb714e9daa6c886ce41a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bodyText: {fileID: 114111754325443294}
 --- !u!222 &222215160453192282
 CanvasRenderer:
   m_ObjectHideFlags: 1

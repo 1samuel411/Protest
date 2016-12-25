@@ -38,15 +38,16 @@ public class PoolManager : MonoBehaviour
     private PoolSystem currentSystem;
     public void SetPath(int id)
     {
-        currentSystem = poolSystems.Where(t => t.id == id).ToList()[0];
+        currentSystem = poolSystems.Where(t => t.id == id).ToList().FirstOrDefault();
     }
 
     public PoolObject Create(PoolSystem poolSystem, Transform parent)
     {
-        PoolObject nonTakenObject = poolSystem.poolObjects.Where(t => t.inUse == false).ToList()[0];
+        PoolObject nonTakenObject = poolSystem.poolObjects.Where(t => t.inUse == false).FirstOrDefault();
         if(nonTakenObject == null)
         {
-            poolSystem.poolObjects.Add(GameObject.Instantiate(poolSystem.poolObject));
+            nonTakenObject = GameObject.Instantiate(poolSystem.poolObject);
+            poolSystem.poolObjects.Add(nonTakenObject);
         }
         nonTakenObject.Create(parent);
         return nonTakenObject;

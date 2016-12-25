@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class ChatModel : Model
 {
 
@@ -8,11 +9,11 @@ public class ChatModel : Model
 
     public string body;
 
-    public UserModel userPosted;
+    public int userPosted;
 
     public string datePosted;
 
-    public ChatModel(int index, string body, UserModel userPosted, string datePosted)
+    public ChatModel(int index, string body, int userPosted, string datePosted)
     {
         this.body = body;
 

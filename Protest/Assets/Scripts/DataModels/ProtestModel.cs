@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class ProtestModel : Model
 {
 
@@ -16,24 +17,28 @@ public class ProtestModel : Model
     public string dateUpdated;
 
     public string donationsEmail;
+    public float donationCurrent;
     public float donationTarget;
 
-    public UserModel[] likes;
-    public UserModel[] going;
+    public int[] likes;
+    public int[] going;
 
-    public ContributionsModel[] contributers;
+    public int[] contributions;
 
-    public ChatModel[] chats;
+    public int[] chats;
+
+    public int userCreated;
 
     public ProtestModel
         (
             int index,
             string protestPicture, string name, string description, string location, string date,
             string datePosted, string dateUpdated,
-            string donationsEmail, float donationTarget,
-            UserModel[] likes, UserModel[] going, 
-            ContributionsModel[] contributers,
-            ChatModel[] chats
+            string donationsEmail, float donationCurrent, float donationTarget,
+            int[] likes, int[] going,
+            int[] contributions,
+            int[] chats,
+            int userCreated
         )
     {
         this.index = index;
@@ -48,13 +53,16 @@ public class ProtestModel : Model
         this.dateUpdated = dateUpdated;
 
         this.donationsEmail = donationsEmail;
+        this.donationCurrent = donationCurrent;
         this.donationTarget = donationTarget;
 
         this.likes = likes;
         this.going = going;
 
-        this.contributers = contributers;
+        this.contributions = contributions;
 
         this.chats = chats;
+
+        this.userCreated = userCreated;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class UserModel : Model
 {
 
@@ -8,19 +9,17 @@ public class UserModel : Model
 
     // raw information
     public string authTokenSession;
-    public string authTokenFacebook;
-    public string authTokenGoogle;
     public string profilePicture;
     public string email;
     public string name;
     public string bio;
 
-    public ProtestModel[] protestsAttended;
-    public ProtestModel[] protestsCreated;
+    public int[] protestsAttended;
+    public int[] protestsCreated;
 
     // user followers and following
-    public UserModel[] followers;
-    public UserModel[] following;
+    public int[] followers;
+    public int[] following;
 
     // social
     public string snapchatUser;
@@ -37,9 +36,9 @@ public class UserModel : Model
     public UserModel
         (
             int index,
-            string authTokenSession, string authTokenFacebook, string authTokenGoogle, string profilePicture, string email, string name, string bio, 
-            ProtestModel[] protestsAttended, ProtestModel[] protestsCreated, 
-            UserModel[] followers, UserModel[] following, 
+            string authTokenSession, string profilePicture, string email, string name, string bio,
+            int[] protestsAttended, int[] protestsCreated,
+            int[] followers, int[] following, 
             string snapchatUser, string facebookUser, string instagramUser, string twitterUser, 
             bool notifyLikesComments, bool notifyFollowers, bool notifyFollowing
         )
@@ -47,10 +46,9 @@ public class UserModel : Model
         this.index = index;
 
         this.authTokenSession = authTokenSession;
-        this.authTokenFacebook = authTokenFacebook;
-        this.authTokenGoogle = authTokenGoogle;
         this.profilePicture = profilePicture;
         this.email = email;
+        this.name = name;
         this.bio = bio;
 
         this.protestsAttended = protestsAttended;
