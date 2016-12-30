@@ -9,6 +9,7 @@ using System.Web.Configuration;
 using Newtonsoft.Json;
 using ProtestBackend.Models;
 using ProtestBackend.Controllers;
+using ProtestBackend.DAL;
 
 namespace ProtestBackend.Controllers.User
 {

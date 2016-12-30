@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using ProtestBackend.Controllers;
 using System.Data;
+using ProtestBackend.DLL;
 
 namespace ProtestBackend.Models
 {
