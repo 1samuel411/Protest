@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Facebook.Unity;
 
 public class LoadingController : Controller
 {
@@ -17,22 +18,31 @@ public class LoadingController : Controller
 
     public void LoginFacebook()
     {
-        Authentication.Login_Facebook(LoginCallback);
+        Authentication.Login_Facebook(CallbackFacebook);
     }
 
     public void LoginGoogle()
     {
-        Authentication.Login_Google(LoginCallback);
+        //Authentication.Login_Google(LoginCallback);
     }
 
-    public void LoginCallback(int response)
+    private void CallbackFacebook(ILoginResult result)
     {
-        Log.Create(2, "Login response: " + response, "LoadingController");
-        if (response == 0)
+        if (result.Cancelled || result.Error != null)
         {
-            _View.loading = true;
-            ProtestListController.instance.Load(LoadCallback);
+            Debug.Log("Canceled or Error: " + result.Error);
         }
+        else
+        {
+            Authentication.Authenticate(result.AccessToken.UserId, result.AccessToken.TokenString, Authentication.LoginType.Facebook);
+            Debug.Log(result.AccessToken.UserId);
+        }
+    }
+
+    public void Load()
+    {
+        _View.loading = true;
+        ProtestListController.instance.Load(LoadCallback);
     }
 
     public void LoadCallback(int response)

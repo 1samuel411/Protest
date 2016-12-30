@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+using ImageAndVideoPicker;
+
 /**
  * Purpose: Take a string data and convert it to a native Data.
 **/
@@ -18,7 +20,18 @@ public class DataParser : Base
     // Min   : 30
     // Sec   : 0
 
-    public static MonoBehaviour behaviour;
+    private static MonoBehaviour _behaviour;
+    public static MonoBehaviour behaviour
+    {
+        get
+        {
+            return _behaviour;
+        }
+        set
+        {
+            _behaviour = value;
+        }
+    }
 
     void Awake()
     {
@@ -37,6 +50,20 @@ public class DataParser : Base
     {
         string newDate = (date.Year-2000) + "." + date.Month + "." + date.Day + "." + date.Hour + "." + date.Minute + "." + date.Second;
         return newDate;
+    }
+
+    public static void ChangeIcon()
+    {
+#if UNITY_ANDROID
+        AndroidPicker.BrowseImage(true);
+#elif UNITY_IPHONE
+		IOSPicker.BrowseImage(true); // true for pick and crop
+#endif
+    }
+
+    public static string UploadImage(Texture2D image)
+    {
+        return "";
     }
 
     public static void SetSprite(Image image, string url, int size = 128)
@@ -73,9 +100,19 @@ public class DataParser : Base
         }
     }
 
+    public static void AuthenticateUser(Action<string, string, Authentication.LoginType> Callback, Authentication.LoginType logintType, string sessionKey)
+    {
+        Callback("", "", logintType);
+    }
+
+    public static void AuthenticateUser(Action<string, string, Authentication.LoginType> Callback, Authentication.LoginType logintType, string userId, string sessionKey)
+    {
+        Callback("", "", logintType);
+    }
+
     public static UserModel GetUser(int id)
     {
-        UserModel userModel = new UserModel(id, "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], new int[5], new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
+        UserModel userModel = new UserModel(id, "", "", "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], new int[5], new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
         int[] goingUsers = new int[1];
         goingUsers[0] = 1;
         return userModel;
@@ -83,9 +120,9 @@ public class DataParser : Base
 
     public static UserModel GetUser(string token)
     {
-        UserModel userModel = new UserModel(0, token, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], null, new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
+        UserModel userModel = new UserModel(0, token, "", "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], null, new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
         UserModel[] goingUsers = new UserModel[1];
-        goingUsers[0] = new UserModel(0, token, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], null, new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
+        goingUsers[0] = new UserModel(0, token, "", "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], null, new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
         return userModel;
     }
 
@@ -103,14 +140,14 @@ public class DataParser : Base
     {
         UserModel userModel = newModel;
         userModel.index = id;
-        userModel.authTokenSession = token;
+        userModel.sessionToken = token;
         return userModel;
     }
 
     public static UserModel[] SearchUsers(string search)
     {
         UserModel[] models = new UserModel[1];
-        models[0] = new UserModel(0, null, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[600], new int[3], new int[20], new int[5], "hello", "hello", "hello", "hello", true, true, true);
+        models[0] = new UserModel(0, null, null, null, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[600], new int[3], new int[20], new int[5], "hello", "hello", "hello", "hello", true, true, true);
         return models;
     }
 

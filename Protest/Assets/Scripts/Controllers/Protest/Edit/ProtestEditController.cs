@@ -5,6 +5,8 @@ using UnityEngine;
 using DeadMosquito.AndroidGoodies;
 using DeadMosquito.IosGoodies;
 
+using ImageAndVideoPicker;
+
 public class ProtestEditController : Controller
 {
 
@@ -20,6 +22,7 @@ public class ProtestEditController : Controller
     {
         _view = view.GetComponent<ProtestEditView>();
         instance = this;
+        PickerEventListener.onImageLoad += OnImageLoad;
     }
 
     private Controller _returnController;
@@ -130,12 +133,13 @@ public class ProtestEditController : Controller
 
     public void UpdateIcon()
     {
-
+        DataParser.ChangeIcon();
     }
 
-    public void SetLocation()
+    void OnImageLoad(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
     {
-
+        _view.iconImage.sprite = Sprite.Create(tex, new Rect(0, 0, 128, 128), Vector2.zero);
+        model.protestPicture = DataParser.UploadImage(tex);
     }
 
     string _date;

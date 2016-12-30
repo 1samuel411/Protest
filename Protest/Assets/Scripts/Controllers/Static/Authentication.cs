@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
+using Facebook.Unity;
 
 public class Authentication : Base
 {
@@ -12,7 +13,8 @@ public class Authentication : Base
 
     public static bool authenticated;
 
-    private static string localKey = "SessionKeys";
+    private static string localKey = "SessionKeyV1.0";
+    private static string loginTypeKey = "LoginTypeV1.0";
 
     public static UserModel user
     {
@@ -27,9 +29,11 @@ public class Authentication : Base
 
     void Awake()
     {
+        FB.Init();
         if(PlayerPrefs.HasKey(localKey))
         {
-            Authenticate(PlayerPrefs.GetString(localKey));
+            Debug.Log(PlayerPrefs.GetString(localKey));
+            Authenticate(PlayerPrefs.GetString(localKey), (LoginType)PlayerPrefs.GetInt(loginTypeKey));
         }
     }
 
@@ -41,40 +45,49 @@ public class Authentication : Base
         }
     }
 
+    public static void Login_Facebook(FacebookDelegate<ILoginResult> CallbackFacebook)
+    {
+        Log.Create(0, "Login to facebook event", "Authentication");
+
+        // Login to facebook and return the key to call the authenticate method
+        string[] permissions = new string[] { "email", "public_profile" };
+        FB.LogInWithReadPermissions(permissions, CallbackFacebook);
+    }
+    
     public static void Login_Google(Action<int> callback)
     {
-        Log.Create(0, "Login to google event", "Authentication");
-
         int response = 0;
-       
-        // Login to facebook and return the key to call the authenticate method
+        // Login to google and return the key to call the authenticate method
 
-        Authenticate("");
-        
+
         callback.Invoke(response);
     }
 
-    public static void Login_Facebook(Action<int> callback)
+    public enum LoginType {  Google, Facebook  };
+
+    public static void Authenticate(string userId, string sessionKey, LoginType loginType)
     {
-        int response = 0;
-        // Login to facebook and return the key to call the authenticate method
+        Log.Create(2, "Authentication Checking Session: " + sessionKey + " | UserId = " + userId, "Authentication");
 
-        Authenticate("");
-
-        callback.Invoke(response);
+        DataParser.AuthenticateUser(ResponseAuthenticate, loginType, userId, sessionKey);
     }
 
-    public static void Authenticate(string sessionKey)
+    private static void ResponseAuthenticate(string sessionToken, string userToken, LoginType loginType)
+    {
+        authenticated = true;
+        auth_token = sessionToken;
+        PlayerPrefs.SetInt(loginTypeKey, (int)loginType);
+        PlayerPrefs.SetString(localKey, auth_token);
+        Log.Create(2, "Authentication Successful", "Authentication", auth_token);
+
+        LoadingController.instance.Load();
+    }
+
+    public static void Authenticate(string sessionKey, LoginType loginType)
     {
         Log.Create(2, "Authentication Checking Session: " + sessionKey, "Authentication");
 
-        // Search for session key
-        
-
-        authenticated = true;
-        auth_token = sessionKey;
-        PlayerPrefs.SetString(localKey, auth_token);
-        Log.Create(2, "Authentication Successful", "Authentication", auth_token);
+        DataParser.AuthenticateUser(ResponseAuthenticate, loginType, sessionKey);
     }
 
     public static void UnAuthenticate()

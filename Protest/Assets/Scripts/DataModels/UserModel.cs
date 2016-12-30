@@ -8,7 +8,9 @@ public class UserModel : Model
     public int index;
 
     // raw information
-    public string authTokenSession;
+    public string sessionToken;
+    public string facebookUserToken;
+    public string googleUserToken;
     public string profilePicture;
     public string email;
     public string name;
@@ -36,7 +38,8 @@ public class UserModel : Model
     public UserModel
         (
             int index,
-            string authTokenSession, string profilePicture, string email, string name, string bio,
+            string sessionToken, string facebookUserToken, string googleUserToken, 
+            string profilePicture, string email, string name, string bio,
             int[] protestsAttended, int[] protestsCreated,
             int[] followers, int[] following, 
             string snapchatUser, string facebookUser, string instagramUser, string twitterUser, 
@@ -45,7 +48,10 @@ public class UserModel : Model
     {
         this.index = index;
 
-        this.authTokenSession = authTokenSession;
+        this.sessionToken = sessionToken;
+        this.facebookUserToken = facebookUserToken;
+        this.googleUserToken = googleUserToken;
+
         this.profilePicture = profilePicture;
         this.email = email;
         this.name = name;

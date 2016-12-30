@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using ImageAndVideoPicker;
+
 public class ProfileEditController : Controller
 {
 
@@ -12,6 +14,7 @@ public class ProfileEditController : Controller
     {
         instance = this;
         _view = view.GetComponent<ProfileEditView>();
+        PickerEventListener.onImageLoad += OnImageLoad;
     }
 
     public void Show(UserModel modelToEdit)
@@ -35,6 +38,12 @@ public class ProfileEditController : Controller
 
     public void UpdateIcon()
     {
+        DataParser.ChangeIcon();
+    }
 
+    void OnImageLoad(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    {
+        _view.iconImage.sprite = Sprite.Create(tex, new Rect(0, 0, 128, 128), Vector2.zero);
+        _view.userModel.profilePicture = DataParser.UploadImage(tex);
     }
 }

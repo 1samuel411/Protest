@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "782929599508",
+    "firebase_url": "https://protest-1070b.firebaseio.com",
+    "project_id": "protest-1070b",
+    "storage_bucket": "protest-1070b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:782929599508:android:4f4d386a6cc863f5",
+        "android_client_info": {
+          "package_name": "com.ProtestChange.Protest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "782929599508-b43dbjjeagvag608lo5opndgammm9eoe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGeAZTo27_G21AGKnVTSur2BclWgSyEow"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

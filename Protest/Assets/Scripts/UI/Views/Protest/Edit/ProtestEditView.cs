@@ -33,12 +33,14 @@ public class ProtestEditView : View
 
     public InputField nameInput;
     public InputField bodyInput;
-    public Button locationButton;
+    public InputField locationInput;
     public Text locationText;
     public Button dateButton;
     public Text dateText;
 
     public Button completeButton;
+
+    public Image iconImage;
 
     public InputField donationsGoalInput;
     public InputField paypalEmailInput;
@@ -89,6 +91,8 @@ public class ProtestEditView : View
         ProtestEditController.instance.model.name = nameInput.text;
         ProtestEditController.instance.model.description = bodyInput.text;
         ProtestEditController.instance.model.donationsEmail = paypalEmailInput.text;
+        ProtestEditController.instance.model.location = locationInput.text;
+
         if (donationsGoalInput.text != "")
             ProtestEditController.instance.model.donationTarget = float.Parse(donationsGoalInput.text);
 
@@ -125,6 +129,7 @@ public class ProtestEditView : View
         bodyInput.text = ProtestEditController.instance.model.description;
         paypalEmailInput.text = ProtestEditController.instance.model.donationsEmail;
         donationsGoalInput.text = ProtestEditController.instance.model.donationTarget.ToString();
+        locationInput.text = ProtestEditController.instance.model.location;
     }
 
     public void SetSelection(int index)
@@ -156,11 +161,6 @@ public class ProtestEditView : View
     public void SetDate()
     {
         ProtestEditController.instance.SetDate();
-    }
-
-    public void SetLocation()
-    {
-        ProtestEditController.instance.SetLocation();
     }
 
     public void PaypalInfo()

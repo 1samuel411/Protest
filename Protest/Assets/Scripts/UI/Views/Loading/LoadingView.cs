@@ -35,12 +35,12 @@ public class LoadingView : View
     public void LoginFacebook()
     {
         Log.Create(0, "Logging into facebook...", "LoadingView");
-        Authentication.Login_Facebook(LoadingController.instance.LoginCallback);
+        LoadingController.instance.LoginFacebook();
     }
 
     public void LoginGoogle()
     {
         Log.Create(0, "Logging into google...", "LoadingView");
-        Authentication.Login_Google(LoadingController.instance.LoginCallback);
+        LoadingController.instance.LoginGoogle();
     }
 }
