@@ -26,6 +26,7 @@ namespace ProtestBackend.Controllers.User
                 if (int.TryParse(indexQuery, out index))
                 {
                     DataTable table = ConnectionManager.MakeRequest("SELECT * FROM Users WHERE id=" + index);
+                    UserModel user = new UserModel(table);
                     string result = JsonConvert.SerializeObject(table, Formatting.Indented);
                     return Content(result);
                 }

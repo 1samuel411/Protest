@@ -7,7 +7,7 @@ using System.Data;
 
 namespace ProtestBackend.Models
 {
-    public class User
+    public class UserModel
     {
         public int index;
 
@@ -35,7 +35,7 @@ namespace ProtestBackend.Models
         public bool notifyFollowers;
         public bool notifyFollowing;
 
-        public User
+        public UserModel
             (
                 int index,
                 string sessionToken, string facebookUserToken, string googleUserToken,
@@ -63,7 +63,7 @@ namespace ProtestBackend.Models
             this.following = IntegerArrayParser.ParseString(following);
         }
 
-        public User(DataTable datTable)
+        public UserModel(DataTable dataTable)
         {
 
         }
