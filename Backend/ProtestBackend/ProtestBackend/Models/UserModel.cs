@@ -58,10 +58,10 @@ namespace ProtestBackend.Models
             this.name = name;
             this.bio = bio;
 
-            this.protestsAttended = IntegerArrayParser.ParseString(protestsAttended);
-            this.protestsCreated = IntegerArrayParser.ParseString(protestsCreated);
-            this.followers = IntegerArrayParser.ParseString(followers);
-            this.following = IntegerArrayParser.ParseString(following);
+            this.protestsAttended = IntegerArrayParser.ParseStringToInts(protestsAttended);
+            this.protestsCreated = IntegerArrayParser.ParseStringToInts(protestsCreated);
+            this.followers = IntegerArrayParser.ParseStringToInts(followers);
+            this.following = IntegerArrayParser.ParseStringToInts(following);
         }
 
         public UserModel(DataTable dataTable)
