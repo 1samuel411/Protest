@@ -11,7 +11,7 @@ namespace ProtestBackend.Controllers
         // GET: Default
         public ActionResult Index()
         {
-            return Content("hello there, please check the api, <a href=\"https://github.com/1samuel411/Protest/wiki\"Here</a>");
+            return Content("hello there, please check the api, https://github.com/1samuel411/Protest/wiki");
             //return Redirect("https://github.com/1samuel411/Protest/wiki");
         }
     }

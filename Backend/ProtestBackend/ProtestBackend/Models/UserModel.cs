@@ -57,15 +57,32 @@ namespace ProtestBackend.Models
             this.name = name;
             this.bio = bio;
 
-            this.protestsAttended = IntegerArrayParser.ParseString(protestsAttended);
-            this.protestsCreated = IntegerArrayParser.ParseString(protestsCreated);
-            this.followers = IntegerArrayParser.ParseString(followers);
-            this.following = IntegerArrayParser.ParseString(following);
+            this.protestsAttended = DataLogicLayer.ParseString(protestsAttended);
+            this.protestsCreated = DataLogicLayer.ParseString(protestsCreated);
+            this.followers = DataLogicLayer.ParseString(followers);
+            this.following = DataLogicLayer.ParseString(following);
         }
 
-        public UserModel(DataTable dataTable)
+        public UserModel(DataRow dataTable)
         {
+            this.index = int.Parse(dataTable["id"].ToString());
 
+            this.sessionToken = dataTable["sessionToken"].ToString();
+            this.facebookUserToken = dataTable["facebookUserToken"].ToString();
+            this.googleUserToken = dataTable["googleUserToken"].ToString();
+
+            this.profilePicture = dataTable["profilePicture"].ToString();
+            this.name = dataTable["profilePicture"].ToString();
+            this.bio = dataTable["profilePicture"].ToString();
+
+            this.protestsAttended = DataLogicLayer.ParseString(dataTable["protestsAttended"].ToString());
+            this.protestsCreated = DataLogicLayer.ParseString(dataTable["protestsCreated"].ToString());
+            this.followers = DataLogicLayer.ParseString(dataTable["followers"].ToString());
+            this.following = DataLogicLayer.ParseString(dataTable["following"].ToString());
+
+            this.notifyLikesComments = bool.Parse(dataTable["notifyLikesComments"].ToString());
+            this.notifyFollowers = bool.Parse(dataTable["notifyFollowers"].ToString());
+            this.notifyFollowing = bool.Parse(dataTable["notifyFollowing"].ToString());
         }
     }
 }

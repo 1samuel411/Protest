@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace ProtestBackend.Controllers
+namespace ProtestBackend.Controllers.DataLayers
 {
-    public class IntegerArrayParser
+    public class DataLogicLayer
     {
         public static int[] ParseString(string stringToParse)
         {
@@ -13,7 +13,8 @@ namespace ProtestBackend.Controllers
             string[] stringsParsed = stringToParse.Split(',');
             for(int i = 0; i < stringsParsed.Length; i++)
             {
-                intList.Add(int.Parse(stringsParsed[i]));
+                if(stringsParsed[i] != null && stringsParsed[i] != "")
+                    intList.Add(int.Parse(stringsParsed[i]));
             }
             return intList.ToArray();
         }
