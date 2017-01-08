@@ -21,7 +21,7 @@ public class Authentication : Base
 
     void Awake()
     {
-        //LoadingController.instance._View.loading = true;
+        LoadingController.instance._View.loading = true;
         FB.Init(OnInitComplete);
 
         InvokeRepeating("CheckInternet", 1, 15);
