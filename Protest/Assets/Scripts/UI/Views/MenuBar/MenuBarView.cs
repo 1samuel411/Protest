@@ -22,7 +22,12 @@ public class MenuBarView : View
 
     public void ChangeInfo(int userModel)
     {
-        userToDisplay = DataParser.GetUser(userModel);
+        DataParser.GetUser(userModel, GetUserCallback);
+    }
+
+    public void GetUserCallback(UserModel userModel)
+    {
+        userToDisplay = userModel;
 
         DataParser.SetSprite(profileImage, userToDisplay.profilePicture);
 
@@ -44,26 +49,32 @@ public class MenuBarView : View
 
     private void ProtestsAttendedCallback()
     {
-        ListController.instance.Show(ListController.ShowType.attended, DataParser.GetUser(Authentication.user.index));
+        ListController.instance.Show(ListController.ShowType.attended, userToDisplay.index);
     }
 
     private void ProtestsCreatedCallback()
     {
-        ListController.instance.Show(ListController.ShowType.created, DataParser.GetUser(Authentication.user.index));
+        ListController.instance.Show(ListController.ShowType.created, userToDisplay.index);
     }
 
     private void FollowersCallback()
     {
-        ListController.instance.Show(ListController.ShowType.followers, DataParser.GetUser(Authentication.user.index));
+        ListController.instance.Show(ListController.ShowType.followers, userToDisplay.index);
     }
 
     private void FollowingCallback()
     {
-        ListController.instance.Show(ListController.ShowType.following, DataParser.GetUser(Authentication.user.index));
+        ListController.instance.Show(ListController.ShowType.following, userToDisplay.index);
     }
 
     public void OpenProfile()
     {
         ProfileViewController.instance.Show(userToDisplay.index, ProtestListController.instance);
+    }
+    
+    public void Logout()
+    {
+        ProtestListController.instance.GetView().HideMenu();
+        Authentication.Logout();
     }
 }

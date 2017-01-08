@@ -16,7 +16,6 @@ public class MenuBarController : Controller
 
     public void UpdateProfile()
     {
-        _view.ChangeInfo(Authentication.user.index);
+        _view.ChangeInfo(Authentication.userIndex);
     }
-    
 }

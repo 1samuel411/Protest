@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -35,8 +36,20 @@ public class SearchController : Controller
         _view = view.GetComponent<SearchView>();
     }
 
+    void Update()
+    {
+        if (!view.gameObject.activeInHierarchy)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Return();
+        }
+    }
+
     public void Load()
     {
+        searchString = "";
         Show();
     }
 
@@ -76,11 +89,22 @@ public class SearchController : Controller
 
         Log.Create(1, "Populating from server", "SearchController");
 
-        if(_view.selection == SearchView.SearchSelection.Protests)
+        SpinnerController.instance.Show();
+
+        if (_view.selection == SearchView.SearchSelection.Protests)
             protestsData = DataParser.SearchProtests(searchString);
         if(_view.selection == SearchView.SearchSelection.Users)
-            usersData = DataParser.SearchUsers(searchString);
+            DataParser.SearchUsers(searchString, SearchUsersCallback);
+    }
 
+    public void SearchUsersCallback(UserModel[] users)
+    {
+        SpinnerController.instance.Hide();
+
+        if (users == null)
+            return;
+
+        usersData = users;
         _pageLength = ((_view.selection == SearchView.SearchSelection.Protests ? protestsData.Length : usersData.Length) / _pageSize) + 1;
         _beginIndex = 0;
         _endIndex = 0;
@@ -117,12 +141,16 @@ public class SearchController : Controller
         _view.pageBackButton.interactable = (listIndex > 1);
 
         // Get Atlas for protests: _beginIndex to _endIndex
-
-        PopulateWithAtlas();
+        SpinnerController.instance.Show();
+        if (_view.selection == SearchView.SearchSelection.Users)
+            DataParser.GetAtlas(usersData.Skip(_beginIndex).Take(_endIndex).Select(x => x.profilePicture).ToArray(), PopulateWithAtlas);
+        if (_view.selection == SearchView.SearchSelection.Protests)
+            DataParser.GetAtlas(protestsData.Skip(_beginIndex).Take(_endIndex).Select(x => x.protestPicture).ToArray(), PopulateWithAtlas);
     }
 
-    private void PopulateWithAtlas()
+    private void PopulateWithAtlas(Texture2D _atlas)
     {
+        SpinnerController.instance.Hide();
         // Clear
         PoolManager.instance.Clear();
         PoolManager.instance.SetPath(1);

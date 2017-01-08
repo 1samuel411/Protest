@@ -35,9 +35,10 @@ namespace DeadMosquito.IosGoodies.Internal
         [MonoPInvokeCallback(typeof(ActionVoidCallbackDelegate))]
         public static void ActionVoidCallback(IntPtr actionPtr)
         {
-#if DEVELOPMENT_BUILD
-            Debug.Log("ActionVoidCallback");
-#endif
+            if (Debug.isDebugBuild)
+            {
+                Debug.Log("ActionVoidCallback");
+            }
             if (actionPtr != IntPtr.Zero)
             {
                 var action = actionPtr.Cast<Action>();
@@ -48,9 +49,10 @@ namespace DeadMosquito.IosGoodies.Internal
         [MonoPInvokeCallback(typeof(ActionStringCallbackDelegate))]
         public static void ActionStringCallaback(IntPtr actionPtr, string data)
         {
-#if DEVELOPMENT_BUILD
-            Debug.Log("ActionStringCallaback: " + data);
-#endif
+            if (Debug.isDebugBuild)
+            {
+                Debug.Log("ActionStringCallaback: " + data);
+            }
             if (actionPtr != IntPtr.Zero)
             {
                 var action = actionPtr.Cast<Action<string>>();

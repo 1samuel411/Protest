@@ -34,12 +34,16 @@ public class LoadingView : View
 
     public void LoginFacebook()
     {
+        if (loading)
+            return;
         Log.Create(0, "Logging into facebook...", "LoadingView");
         LoadingController.instance.LoginFacebook();
     }
 
     public void LoginGoogle()
     {
+        if (loading)
+            return;
         Log.Create(0, "Logging into google...", "LoadingView");
         LoadingController.instance.LoginGoogle();
     }

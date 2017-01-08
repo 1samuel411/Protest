@@ -14,6 +14,17 @@ public class ProfileViewController : Controller
         _view = view.GetComponent<ProfileView>();
     }
 
+    void Update()
+    {
+        if (!view.gameObject.activeInHierarchy)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Return();
+        }
+    }
+
     public void Return()
     {
         Hide();
@@ -23,10 +34,17 @@ public class ProfileViewController : Controller
     private Controller _previousController;
     public void Show(int userModel, Controller previousController)
     {
+        SpinnerController.instance.Show();
         _previousController = previousController;
+        DataParser.GetUser(userModel, GetUserCallback);
+    }
+
+    public void GetUserCallback(UserModel user)
+    {
+        SpinnerController.instance.Hide();
         _previousController.Hide();
         view.gameObject.SetActive(true);
-        _view.userModel = DataParser.GetUser(userModel);
+        _view.userModel = user;
     }
 
     public void EditProfile(UserModel user)
@@ -45,30 +63,35 @@ public class ProfileViewController : Controller
 
     void CallbackReport(int response)
     {
+        if(response != 0)
+            SpinnerController.instance.Show();
+
         if (response == 1)
         {
             Log.Create(1, "Abusive Language Report Sent", "ProfileViewController");
-            DataParser.SendReportUser(_reportUser.index, "Language");
+            DataParser.SendReportUser(_reportUser.index, "Language", SendReportCallback);
         }
         else if (response == 2)
         {
             Log.Create(1, "Content Report Sent", "ProfileViewController");
-            DataParser.SendReportUser(_reportUser.index, "Content");
+            DataParser.SendReportUser(_reportUser.index, "Content", SendReportCallback);
         }
         else if (response == 3)
         {
             Log.Create(1, "Harassment Report Sent", "ProfileViewController");
-            DataParser.SendReportUser(_reportUser.index, "Harassment");
+            DataParser.SendReportUser(_reportUser.index, "Harassment", SendReportCallback);
         }
         else if (response == 4)
         {
-            DataParser.SendReportUser(_reportUser.index, "Other");
+            DataParser.SendReportUser(_reportUser.index, "Other", SendReportCallback);
             Log.Create(1, "Other Report Sent", "ProfileViewController");
         }
-        if (response != 0)
-        {
-            Popup.Create("Report Sent", "Your report will be reviewed, Thank you for your submission", null, "Popup", "Okay");
-        }
+    }
+
+    void SendReportCallback()
+    {
+        SpinnerController.instance.Hide();
+        Popup.Create("Report Sent", "Your report will be reviewed, Thank you for your submission", null, "Popup", "Okay");
     }
 
     PoolObject _obj;
@@ -109,66 +132,75 @@ public class ProfileViewController : Controller
     public void OpenFollowers()
     {
         Log.Create(1, "Opening Followers", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.followers, userModel);
+        ListController.instance.Show(ListController.ShowType.followers, userModel.index);
 
     }
 
     public void OpenFollowing()
     {
         Log.Create(1, "Opening Following", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.following, userModel);
+        ListController.instance.Show(ListController.ShowType.following, userModel.index);
     }
 
     public void OpenProtestsCreated()
     {
         Log.Create(1, "Opening Protests", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.created, userModel);
+        ListController.instance.Show(ListController.ShowType.created, userModel.index);
     }
 
     public void OpenAttended()
     {
         Log.Create(1, "Opening Attended", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.attended, userModel);
+        ListController.instance.Show(ListController.ShowType.attended, userModel.index);
     }
 
     public void OpenSnapchat(string url)
     {
         string openUrl = ("http://www.snapchat.com/add/" + url);
-#if UNITY_EDITOR
         Application.OpenURL(openUrl);
-#endif
-        InAppBrowser.OpenURL(openUrl);
+        //InAppBrowser.OpenURL(openUrl);
     }
 
     public void OpenFacebook(string url)
     {
         string openUrl = ("http://www.facebook.com/" + url);
-#if UNITY_EDITOR
         Application.OpenURL(openUrl);
-#endif
-        InAppBrowser.OpenURL(openUrl);
+        //InAppBrowser.OpenURL(openUrl);
     }
 
     public void OpenInstagram(string url)
     {
         string openUrl = ("https://www.instagram.com/" + url);
-#if UNITY_EDITOR
         Application.OpenURL(openUrl);
-#endif
-        InAppBrowser.OpenURL(openUrl);
+        //InAppBrowser.OpenURL(openUrl);
     }
 
     public void OpenTwitter(string url)
     {
         string openUrl = ("https://twitter.com/" + url);
-#if UNITY_EDITOR
         Application.OpenURL(openUrl);
-#endif
-        InAppBrowser.OpenURL(openUrl);
+        //InAppBrowser.OpenURL(openUrl);
     }
 
     public void Follow(int index)
     {
-        DataParser.Follow(index);
+        SpinnerController.instance.Show();
+        DataParser.Follow(index, FollowCallback);
+    }
+
+    void FollowCallback(bool following)
+    {
+        Authentication.RefreshUserModel(RefreshCallback);
+    }
+
+    void RefreshCallback()
+    {
+        DataParser.GetUser(_view.userModel.index, RefreshProfileViewCallback);
+    }
+
+    void RefreshProfileViewCallback(UserModel user)
+    {
+        SpinnerController.instance.Hide();
+        _view.userModel = user;
     }
 }

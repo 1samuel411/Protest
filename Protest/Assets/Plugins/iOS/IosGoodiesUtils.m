@@ -11,18 +11,18 @@
     if (count == 0) {
         return nil;
     }
-    
+
     NSMutableArray *mutableArray = [NSMutableArray array];
-    
+
     for (int i = 0; i < count; i++) {
         mutableArray[i] = [self createNSStringFrom:values[i]];
     }
-    
+
     return mutableArray;
 }
 
 + (char *)cStringCopy:(const char *)string {
-    char *res = (char *)malloc(strlen(string) + 1);
+    char *res = (char *) malloc(strlen(string) + 1);
     strcpy(res, string);
     return res;
 }

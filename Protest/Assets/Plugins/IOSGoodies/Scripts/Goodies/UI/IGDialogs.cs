@@ -2,9 +2,14 @@
 using System;
 using System.Runtime.InteropServices;
 using DeadMosquito.IosGoodies.Internal;
+using AOT;
+using UnityEngine;
 
 namespace DeadMosquito.IosGoodies
 {
+    /// <summary>
+    /// Class to present native iOS dialogs
+    /// </summary>
     public static class IGDialogs
     {
         /// <summary>
@@ -81,6 +86,7 @@ namespace DeadMosquito.IosGoodies
                 onSecondButtonClick.GetPointer(),
                 cancelButtonClick.GetPointer());
         }
+
 
         [DllImport("__Internal")]
         private static extern void _showConfirmationDialog(string title, string message, string buttonTitle,

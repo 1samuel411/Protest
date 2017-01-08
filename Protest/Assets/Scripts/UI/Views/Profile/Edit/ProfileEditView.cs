@@ -163,7 +163,7 @@ public class ProfileEditView : View
     public void Confirm()
     {
         UpdateModel();
-        ProfileEditController.instance.Complete(userModel);
+        ProfileEditController.instance.Complete();
     }
 
     public void Return()

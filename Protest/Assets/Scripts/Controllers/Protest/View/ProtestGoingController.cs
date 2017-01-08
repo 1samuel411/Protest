@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -52,15 +53,33 @@ public class ProtestGoingController : Controller
 
     public void PopulateFromServer()
     {
-        usersData = DataParser.GetUsers(ProtestController.instance.GetModel().going);
+        _beginIndex = 0;
+        _endIndex = 0;
+
+        // Clear
+        PoolManager.instance.SetPath(1);
+        PoolManager.instance.Clear();
+
+        SpinnerController.instance.Show();
         listIndex = 1;
 
         Log.Create(1, "Populating from server", "ProtestGoingController");
 
-        _pageLength = (usersData.Length / _pageSize) + 1;
-        _beginIndex = 0;
-        _endIndex = 0;
+        _pageLength = (ProtestController.instance.GetModel().going.Length / _pageSize) + 1;
+
         PopulateList();
+    }
+
+    public void GetUsersCallback(UserModel[] userModels)
+    {
+        if(userModels.Length <= 0)
+        {
+            SpinnerController.instance.Hide();
+            return;
+        }
+        usersData = userModels;
+        
+        DataParser.GetAtlas(usersData.Skip(_beginIndex).Take(_endIndex).Select(x => x.profilePicture).ToArray(), PopulateWithAtlas);
     }
 
     public Texture2D _atlas;
@@ -73,15 +92,14 @@ public class ProtestGoingController : Controller
     private int _pageSize = 32;
     public void PopulateList()
     {
-        if (usersData.Length <= 0)
-        {
-            return;
-        }
+        // Clear
+        PoolManager.instance.SetPath(1);
+        PoolManager.instance.Clear();
 
         Log.Create(1, "Populating List", "ProtestGoingController");
 
         if (_pageLength <= 0 || listIndex >= _pageLength)
-            _endIndex = usersData.Length;
+            _endIndex = ProtestController.instance.GetModel().going.Length;
         else
             _endIndex = _pageSize * listIndex;
 
@@ -93,15 +111,13 @@ public class ProtestGoingController : Controller
         _view.pageBackButton.interactable = (listIndex > 1);
 
         // Get Atlas for protests: _beginIndex to _endIndex
-
-        PopulateWithAtlas();
+        SpinnerController.instance.Show();
+        DataParser.GetUsers(ProtestController.instance.GetModel().going.Skip(_beginIndex).Take(_endIndex).ToArray(), GetUsersCallback);
     }
 
-    private void PopulateWithAtlas()
+    private void PopulateWithAtlas(Texture2D _atlas)
     {
-        // Clear
-        PoolManager.instance.SetPath(1);
-        PoolManager.instance.Clear();
+        SpinnerController.instance.Hide();
 
         _rect.position = new Vector2(0, _atlas.height - _rect.height);
 

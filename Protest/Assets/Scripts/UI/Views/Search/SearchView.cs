@@ -75,7 +75,11 @@ public class SearchView : View
 
     public void ChangeSearch(string input)
     {
-        SearchController.instance.searchString = input;
-        Debug.Log("Changed: " + input);
+        if (SearchController.instance.searchString != input)
+        {
+            SearchController.instance.searchString = input;
+            SearchController.instance.PopulateFromServer();
+            Debug.Log("Changed: " + input);
+        }
     }
 }

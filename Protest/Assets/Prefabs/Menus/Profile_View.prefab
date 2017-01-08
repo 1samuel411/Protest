@@ -1055,6 +1055,7 @@ MonoBehaviour:
   editButton: {fileID: 114791993282128492}
   flagButton: {fileID: 114455575618990178}
   followButton: {fileID: 114784551464690090}
+  followButtonText: {fileID: 114769091353402690}
   snapchatButton: {fileID: 114060202887774040}
   facebookButton: {fileID: 114556684666106346}
   instagramButton: {fileID: 114462918704567252}
@@ -3037,8 +3038,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 379.13086, y: -16.999977}
-  m_SizeDelta: {x: 42.38144, y: 35.999954}
+  m_AnchoredPosition: {x: 356.52563, y: -16.999977}
+  m_SizeDelta: {x: 37.43111, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224301666911174626
 RectTransform:
@@ -3308,8 +3309,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 284.26776, y: -16.999977}
-  m_SizeDelta: {x: 76.98191, y: 35.999954}
+  m_AnchoredPosition: {x: 273.58392, y: -16.999977}
+  m_SizeDelta: {x: 67.990105, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224716611961277956
 RectTransform:
@@ -3326,8 +3327,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 222.8884, y: -16.999977}
-  m_SizeDelta: {x: 52.9768, y: 35.999954}
+  m_AnchoredPosition: {x: 219.79443, y: -16.999977}
+  m_SizeDelta: {x: 46.788887, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224775683715755492
 RectTransform:
@@ -3344,8 +3345,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 340.34943, y: -16.999977}
-  m_SizeDelta: {x: 42.38144, y: 35.999954}
+  m_AnchoredPosition: {x: 322.69452, y: -16.999977}
+  m_SizeDelta: {x: 37.43111, y: 35.999954}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224794879749804898
 RectTransform:

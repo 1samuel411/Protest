@@ -14,7 +14,17 @@ public class ProfileEditController : Controller
     {
         instance = this;
         _view = view.GetComponent<ProfileEditView>();
-        PickerEventListener.onImageLoad += OnImageLoad;
+    }
+
+    void Update()
+    {
+        if (!view.gameObject.activeInHierarchy)
+            return;
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Return();
+        }
     }
 
     public void Show(UserModel modelToEdit)
@@ -23,12 +33,18 @@ public class ProfileEditController : Controller
         Show();
     }
 
-    public void Complete(UserModel userModel)
+    public void Complete()
     {
+        SpinnerController.instance.Show();
         Log.Create(2, "Editing profile", "ProfileEditController");
-        DataParser.EditUser(userModel, Authentication.user.index, Authentication.auth_token);
+        DataParser.EditUser(_view.userModel, Authentication.auth_token, EditUserCallback);
+    }
+
+    public void EditUserCallback()
+    {
+        SpinnerController.instance.Hide();
         Hide();
-        ProfileViewController.instance.Show(userModel.index, ProtestListController.instance);
+        ProfileViewController.instance.Show(_view.userModel.index, ProtestListController.instance);
     }
 
     public void Return()
@@ -38,12 +54,19 @@ public class ProfileEditController : Controller
 
     public void UpdateIcon()
     {
-        DataParser.ChangeIcon();
+        DataParser.ChangeIcon(GetIconCallback);
     }
 
-    void OnImageLoad(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    void GetIconCallback(Texture2D texture)
     {
-        _view.iconImage.sprite = Sprite.Create(tex, new Rect(0, 0, 128, 128), Vector2.zero);
-        _view.userModel.profilePicture = DataParser.UploadImage(tex);
+        Debug.Log("Got Texture");
+        texture.Resize(128, 128);
+        _view.image = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(128, 128)), new Vector2(0, 0));
+        DataParser.UploadImage(texture, UploadImageCallback);
+    }
+
+    public void UploadImageCallback(string url)
+    {
+        _view.userModel.profilePicture = url;
     }
 }

@@ -18,11 +18,22 @@ public class ProtestController : Controller
         instance = this;
     }
 
+    void Update()
+    {
+        if (!view.gameObject.activeInHierarchy)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Return();
+        }
+    }
+
     bool IsOurs()
     {
         if (_view.protestModel == null)
             return false;
-        bool belongs = (_view.protestModel.userCreated == Authentication.user.index);
+        bool belongs = (_view.protestModel.userCreated == Authentication.userIndex);
         return belongs;
     }
 
@@ -88,27 +99,33 @@ public class ProtestController : Controller
 
     public void Going()
     {
-        if (ProtestController.instance.Contains(Authentication.user.index, _view.protestModel.going))
+        if (ProtestController.instance.Contains(Authentication.userIndex, _view.protestModel.going))
+        {
+#if UNITY_ANDROID
+            var beginTime = DataParser.ParseDate(_view.protestModel.date);
+            var endTime = beginTime.AddHours(2);
+            var eventBuilder = new AGCalendar.EventBuilder(_view.protestModel.name, beginTime);
+            eventBuilder.SetEndTime(endTime);
+            eventBuilder.SetIsAllDay(false);
+            eventBuilder.SetLocation(_view.protestModel.location);
+            eventBuilder.SetAccessLevel(AGCalendar.EventAccessLevel.Public);
+            eventBuilder.SetAvailability(AGCalendar.EventAvailability.Free);
+            eventBuilder.BuildAndShow();
+#endif
+#if UNITY_IOS
+
+#endif
             DataParser.GoingProtest(_view.protestModel.index);
+        }
         else
             DataParser.NotGoingProtest(_view.protestModel.index);
 
-#if UNITY_ANDROID
-        var beginTime = DataParser.ParseDate(_view.protestModel.date);
-        var endTime = beginTime.AddHours(2);
-        var eventBuilder = new AGCalendar.EventBuilder(_view.protestModel.name, beginTime);
-        eventBuilder.SetEndTime(endTime);
-        eventBuilder.SetIsAllDay(false);
-        eventBuilder.SetLocation(_view.protestModel.location);
-        eventBuilder.SetAccessLevel(AGCalendar.EventAccessLevel.Public);
-        eventBuilder.SetAvailability(AGCalendar.EventAvailability.Free);
-        eventBuilder.BuildAndShow();
-#endif
+
     }
 
     public void Like()
     {
-        if (ProtestController.instance.Contains(Authentication.user.index, _view.protestModel.likes))
+        if (ProtestController.instance.Contains(Authentication.userIndex, _view.protestModel.likes))
             DataParser.LikeProtest(_view.protestModel.index);
         else
             DataParser.UnLikeProtest(_view.protestModel.index);

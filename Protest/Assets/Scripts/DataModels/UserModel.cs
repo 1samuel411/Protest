@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -70,5 +71,42 @@ public class UserModel : Model
         this.notifyLikesComments = notifyLikesComments;
         this.notifyFollowers = notifyFollowers;
         this.notifyFollowing = notifyFollowing;
+    }
+
+    public UserModel(JSONObject jsonObj)
+    {
+        index = int.Parse(jsonObj.GetField("index").ToString());
+        sessionToken = jsonObj.GetField("sessionToken").str;
+        facebookUserToken = jsonObj.GetField("facebookUserToken").str;
+        googleUserToken = jsonObj.GetField("googleUserToken").str;
+        profilePicture = jsonObj.GetField("profilePicture").str;
+        email = jsonObj.GetField("email").str;
+        name = jsonObj.GetField("name").str;
+        bio = jsonObj.GetField("bio").str;
+        if(!string.IsNullOrEmpty(bio))
+            bio = bio.Replace(@"\t", "");
+
+        protestsAttended = new int[0];
+        protestsCreated = new int[0];
+        followers = new int[0];
+        following = new int[0];
+
+        if (jsonObj.HasField("protestsAttended") && jsonObj.GetField("protestsAttended").list != null)
+            protestsAttended = DataParser.ParseJsonToIntArray(jsonObj.GetField("protestsAttended").list);
+        if (jsonObj.HasField("protestsCreated") && jsonObj.GetField("protestsCreated").list != null)
+            protestsCreated = DataParser.ParseJsonToIntArray(jsonObj.GetField("protestsCreated").list);
+        if (jsonObj.HasField("followers") && jsonObj.GetField("followers").list != null)
+            followers = DataParser.ParseJsonToIntArray(jsonObj.GetField("followers").list);
+        if (jsonObj.HasField("following") && jsonObj.GetField("following").list != null)
+            following = DataParser.ParseJsonToIntArray(jsonObj.GetField("following").list);
+
+        snapchatUser = jsonObj.GetField("snapchatUser").str;
+        facebookUser = jsonObj.GetField("facebookUser").str;
+        instagramUser = jsonObj.GetField("instagramUser").str;
+        twitterUser = jsonObj.GetField("twitterUser").str;
+
+        notifyLikesComments = jsonObj.GetField("notifyLikesComments").b;
+        notifyFollowers = jsonObj.GetField("notifyFollowers").b;
+        notifyFollowing = jsonObj.GetField("notifyFollowing").b;
     }
 }

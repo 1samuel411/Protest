@@ -132,7 +132,7 @@ Prefab:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 79e9e732650d03c45b562adf5294bac9, type: 2}
-  m_RootGameObject: {fileID: 1993808191}
+  m_RootGameObject: {fileID: 1055969343}
   m_IsPrefabParent: 0
 --- !u!1 &654201445
 GameObject:
@@ -197,15 +197,15 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1993808191
+--- !u!1 &1055969343
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 100000, guid: 79e9e732650d03c45b562adf5294bac9, type: 2}
   m_PrefabInternal: {fileID: 114104211}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 1993808193}
-  - component: {fileID: 1993808192}
+  - component: {fileID: 1055969345}
+  - component: {fileID: 1055969344}
   m_Layer: 0
   m_Name: PickerEventListener
   m_TagString: Untagged
@@ -213,24 +213,24 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1993808192
+--- !u!114 &1055969344
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 11400000, guid: 79e9e732650d03c45b562adf5294bac9,
     type: 2}
   m_PrefabInternal: {fileID: 114104211}
-  m_GameObject: {fileID: 1993808191}
+  m_GameObject: {fileID: 1055969343}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 1683659846, guid: 844c46bd6e04f4bea83a78b0aac7e37d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!4 &1993808193
+--- !u!4 &1055969345
 Transform:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 400000, guid: 79e9e732650d03c45b562adf5294bac9, type: 2}
   m_PrefabInternal: {fileID: 114104211}
-  m_GameObject: {fileID: 1993808191}
+  m_GameObject: {fileID: 1055969343}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}

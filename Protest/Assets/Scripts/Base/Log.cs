@@ -11,6 +11,9 @@ public  class Log : Base
         {
             return;
         }
+        if (string.IsNullOrEmpty(info))
+            return;
+
         Debug.Log((prefix.Length > 0 ? ("[" + prefix + "] ") : "") + info + (suffix.Length > 0 ? (" [" + suffix + "]") : ""));
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +17,7 @@ public class ProfileView : View
     public Button flagButton;
 
     public Button followButton;
+    public Text followButtonText;
 
     public Button snapchatButton;
     public Button facebookButton;
@@ -44,7 +47,7 @@ public class ProfileView : View
 
     public void RefreshData()
     {
-        bool ours = userModel.index == Authentication.user.index;
+        bool ours = userModel.index == Authentication.userIndex;
 
         nameText.text = userModel.name;
         bioText.text = userModel.bio;
@@ -63,6 +66,12 @@ public class ProfileView : View
         flagButton.gameObject.SetActive(!(ours));
         flagButton.onClick.RemoveAllListeners();
         flagButton.onClick.AddListener(() => { ProfileViewController.instance.ReportProfile(userModel); });
+
+        if(Authentication.userModel != null)
+            if (Authentication.userModel.following.Contains(userModel.index))
+                followButtonText.text = "Following";
+            else
+                followButtonText.text = "Follow";
 
         followButton.gameObject.SetActive(!(ours));
         followButton.onClick.RemoveAllListeners();

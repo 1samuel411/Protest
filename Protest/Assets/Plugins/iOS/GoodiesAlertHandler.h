@@ -10,6 +10,6 @@
 
 @interface GoodiesAlertHandler : NSObject <UIAlertViewDelegate>
 
-@property (nonatomic, copy) void (^callbackButtonClicked)(long index);
+@property(nonatomic, copy) void (^callbackButtonClicked)(long index);
 
 @end

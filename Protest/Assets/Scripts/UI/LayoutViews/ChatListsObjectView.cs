@@ -25,7 +25,7 @@ public class ChatListsObjectView : View
 
     public void ChangeInfo(ChatModel model)
     {
-        bool ours = model.userPosted == Authentication.user.index;
+        bool ours = model.userPosted == Authentication.userIndex;
 
         identifierOursTransform.gameObject.SetActive(ours);
         identifierTransform.gameObject.SetActive(!ours);

@@ -53,8 +53,8 @@ public class ProtestView : View
         set
         {
             _protestModel = value;
-            going = ProtestController.instance.Contains(Authentication.user.index, protestModel.going);
-            liked = ProtestController.instance.Contains(Authentication.user.index, protestModel.likes);
+            going = ProtestController.instance.Contains(Authentication.userIndex, protestModel.going);
+            liked = ProtestController.instance.Contains(Authentication.userIndex, protestModel.likes);
         }
     }
 

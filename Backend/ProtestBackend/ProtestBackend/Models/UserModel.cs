@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using ProtestBackend.Controllers;
+using ProtestBackend.DLL;
 using System.Data;
 
 namespace ProtestBackend.Models
@@ -35,6 +35,8 @@ namespace ProtestBackend.Models
         public bool notifyFollowers;
         public bool notifyFollowing;
 
+        public string lastLogin;
+
         public UserModel
             (
                 int index,
@@ -43,7 +45,8 @@ namespace ProtestBackend.Models
                 string email, string name, string bio,
                 string protestsAttended, string protestsCreated, string followers, string following,
                 string snapchatUser, string facebookUser, string twitterUser,
-                bool notifyLikesComments, bool notifyFollowers, bool notifyFollowing
+                bool notifyLikesComments, bool notifyFollowers, bool notifyFollowing,
+                string lastLogin
             )
         {
             this.index = index;
@@ -57,32 +60,73 @@ namespace ProtestBackend.Models
             this.name = name;
             this.bio = bio;
 
-            this.protestsAttended = DataLogicLayer.ParseString(protestsAttended);
-            this.protestsCreated = DataLogicLayer.ParseString(protestsCreated);
-            this.followers = DataLogicLayer.ParseString(followers);
-            this.following = DataLogicLayer.ParseString(following);
+            this.protestsAttended = Parser.ParseStringToIntArray(protestsAttended);
+            this.protestsCreated = Parser.ParseStringToIntArray(protestsCreated);
+            this.followers = Parser.ParseStringToIntArray(followers);
+            this.following = Parser.ParseStringToIntArray(following);
+
+            this.lastLogin = lastLogin;
         }
 
-        public UserModel(DataRow dataTable)
+        public UserModel(DataRow dataTable, bool hide = false)
         {
             this.index = int.Parse(dataTable["id"].ToString());
 
-            this.sessionToken = dataTable["sessionToken"].ToString();
-            this.facebookUserToken = dataTable["facebookUserToken"].ToString();
-            this.googleUserToken = dataTable["googleUserToken"].ToString();
+            if (dataTable.Table.Columns.Contains("sessionToken"))
+            {
+                this.sessionToken = dataTable["sessionToken"].ToString();
+                this.facebookUserToken = dataTable["facebookUserToken"].ToString();
+                this.googleUserToken = dataTable["googleUserToken"].ToString();
 
-            this.profilePicture = dataTable["profilePicture"].ToString();
-            this.name = dataTable["profilePicture"].ToString();
-            this.bio = dataTable["profilePicture"].ToString();
+                this.email = dataTable["email"].ToString();
+            }
 
-            this.protestsAttended = DataLogicLayer.ParseString(dataTable["protestsAttended"].ToString());
-            this.protestsCreated = DataLogicLayer.ParseString(dataTable["protestsCreated"].ToString());
-            this.followers = DataLogicLayer.ParseString(dataTable["followers"].ToString());
-            this.following = DataLogicLayer.ParseString(dataTable["following"].ToString());
+            if(dataTable.Table.Columns.Contains("profilePicture"))
+                this.profilePicture = dataTable["profilePicture"].ToString();
+            if(dataTable.Table.Columns.Contains("name"))
+                this.name = dataTable["name"].ToString();
 
-            this.notifyLikesComments = bool.Parse(dataTable["notifyLikesComments"].ToString());
-            this.notifyFollowers = bool.Parse(dataTable["notifyFollowers"].ToString());
-            this.notifyFollowing = bool.Parse(dataTable["notifyFollowing"].ToString());
+            if (dataTable.Table.Columns.Contains("bio"))
+                this.bio = dataTable["bio"].ToString();
+
+            if(dataTable.Table.Columns.Contains("snapchatUSer"))
+                this.snapchatUser = dataTable["snapchatUSer"].ToString();
+            if(dataTable.Table.Columns.Contains("facebookUser"))
+                this.facebookUser = dataTable["facebookUser"].ToString();
+            if(dataTable.Table.Columns.Contains("instagramUser"))
+                this.instagramUser = dataTable["instagramUser"].ToString();
+            if(dataTable.Table.Columns.Contains("twitterUser"))
+                this.twitterUser = dataTable["twitterUser"].ToString();
+
+            if(dataTable.Table.Columns.Contains("protestsAttended"))
+                this.protestsAttended = Parser.ParseStringToIntArray(dataTable["protestsAttended"].ToString());
+            if(dataTable.Table.Columns.Contains("protestsCreated"))
+                this.protestsCreated = Parser.ParseStringToIntArray(dataTable["protestsCreated"].ToString());
+            if(dataTable.Table.Columns.Contains("followers"))
+                this.followers = Parser.ParseStringToIntArray(dataTable["followers"].ToString());
+            if(dataTable.Table.Columns.Contains("following"))
+                this.following = Parser.ParseStringToIntArray(dataTable["following"].ToString());
+
+            if(dataTable.Table.Columns.Contains("notifyLikesComments"))
+                this.notifyLikesComments = bool.Parse(dataTable["notifyLikesComments"].ToString());
+            if(dataTable.Table.Columns.Contains("notifyFollowers"))
+                this.notifyFollowers = bool.Parse(dataTable["notifyFollowers"].ToString());
+            if(dataTable.Table.Columns.Contains("notifyFollowing"))
+                this.notifyFollowing = bool.Parse(dataTable["notifyFollowing"].ToString());
+
+            if(dataTable.Table.Columns.Contains("lastLogin"))
+                this.lastLogin = dataTable["lastLogin"].ToString();
+
+            if (hide)
+                HideData();
+        }
+
+        public void HideData()
+        {
+            sessionToken = "hidden";
+            facebookUserToken = "hidden";
+            googleUserToken = "hidden";
+            email = "hidden";
         }
     }
 }

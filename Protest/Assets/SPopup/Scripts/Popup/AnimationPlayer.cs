@@ -18,7 +18,6 @@ public class AnimationPlayer : MonoBehaviour
         if (!playStartAnimation)
             return;
 
-        Debug.Log("Startanim");
         if (type == Type.Mecanim)
         {
             if (!this.animatior)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using DeadMosquito.AndroidGoodies;
@@ -35,9 +36,27 @@ public class ProtestListController : Controller
         _view = view.GetComponent<ProtestListView>();
     }
 
-    void Start()
+    void Update()
     {
-        
+        if (!view.gameObject.activeInHierarchy)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (_view.viewMenuBar)
+            {
+                _view.HideMenu();
+                return;
+            }
+
+            Debug.Log("Quiting app");
+            Application.Quit();
+        }
+    }
+
+    public ProtestListView GetView()
+    {
+        return _view;
     }
 
     public void Load(Action<int> callback)
@@ -113,12 +132,13 @@ public class ProtestListController : Controller
         _view.pageBackButton.interactable = (listIndex > 1);
 
         // Get Atlas for protests: _beginIndex to _endIndex
-
-        PopulateWithAtlas();
+        SpinnerController.instance.Show();
+        DataParser.GetAtlas(protestsData.Skip(_beginIndex).Take(_endIndex).Select(x => x.protestPicture).ToArray(), PopulateWithAtlas);
     }
 
-    private void PopulateWithAtlas()
+    private void PopulateWithAtlas(Texture2D _atlas)
     {
+        SpinnerController.instance.Hide();
         // Clear
         PoolManager.instance.SetPath(0);
         PoolManager.instance.Clear();
@@ -168,7 +188,7 @@ public class ProtestListController : Controller
         IGShare.SendEmail(recipients, "Protest Contact - IOS", "Message");
 #endif
 #if UNITY_ANDROID
-        var recipients = new[] { "armi.sam99@gmaik.com" };
+        var recipients = new[] { "armi.sam99@gmail.com" };
         AGShare.SendEmail(recipients, "Protest Contact - Android", "Message");
 #endif
     }

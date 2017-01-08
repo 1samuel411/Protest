@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using ImageAndVideoPicker;
+using DeadMosquito.AndroidGoodies;
+using System.Linq;
+using Facebook.Unity;
 
 /**
  * Purpose: Take a string data and convert it to a native Data.
@@ -19,6 +22,8 @@ public class DataParser : Base
     // Hour  : 1
     // Min   : 30
     // Sec   : 0
+
+    public const string URL = "http://protestchange.azurewebsites.net";
 
     private static MonoBehaviour _behaviour;
     public static MonoBehaviour behaviour
@@ -36,6 +41,87 @@ public class DataParser : Base
     void Awake()
     {
         behaviour = this;
+
+        PickerEventListener.onImageSelect += OnImageSelect;
+        PickerEventListener.onImageLoad += OnImageLoad;
+        PickerEventListener.onError += OnError;
+        PickerEventListener.onCancel += OnCancel;
+    }
+
+    void OnImageSelect(string imgPath, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    {
+        Debug.Log("Image Location : " + imgPath);
+    }
+
+    void OnImageLoad(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    {
+        Debug.Log("Image Location : " + imgPath);
+        GetIconCallback(tex);
+    }
+
+    void OnError(string errorMsg)
+    {
+        Debug.Log("Error : " + errorMsg);
+    }
+
+    void OnCancel()
+    {
+        Debug.Log("Cancel by user");
+    }
+
+    public static int[] ParseStringToIntArray(string stringToParse)
+    {
+        if (String.IsNullOrEmpty(stringToParse))
+            return new int[0];
+        List<int> intList = new List<int>();
+        string[] stringsParsed = stringToParse.Split(',');
+        int result;
+        for (int i = 0; i < stringsParsed.Length; i++)
+        {
+            if (!String.IsNullOrEmpty(stringsParsed[i]))
+                if (int.TryParse(stringsParsed[i], out result))
+                    intList.Add(result);
+        }
+        return intList.ToArray();
+    }
+
+    public static string ParseIntArrayToString(int[] arrayToParse)
+    {
+        string value = "";
+        if (arrayToParse.Length <= 0)
+            return "";
+
+        for(int i = 0; i < arrayToParse.Length; i++)
+        {
+            value += arrayToParse[i].ToString() + ((i >= arrayToParse.Length - 1) ? "" : ",");
+        }
+        return value;
+    }
+
+    public static string ParseStringArrayToString(string[] arrayToParse)
+    {
+        string value = "";
+        if (arrayToParse.Length <= 0)
+            return "";
+
+        for (int i = 0; i < arrayToParse.Length; i++)
+        {
+            value += arrayToParse[i].ToString() + ((i >= arrayToParse.Length - 1) ? "" : ",");
+        }
+        return value;
+    }
+
+    public static int[] ParseJsonToIntArray(List<JSONObject> jsonObjects)
+    {
+        if (jsonObjects == null)
+            return new int[0];
+        List<int> intList = new List<int>();
+        for (int i = 0; i < jsonObjects.Count; i++)
+        {
+            if (jsonObjects[i] != null)
+                intList.Add((int)jsonObjects[i].n);
+        }
+        return intList.ToArray();
     }
 
     public static DateTime ParseDate(string input)
@@ -52,8 +138,11 @@ public class DataParser : Base
         return newDate;
     }
 
-    public static void ChangeIcon()
+    public static Action<Texture2D> GetIconCallback;
+    public static void ChangeIcon(Action<Texture2D> Callback)
     {
+        Debug.Log("Changing icon!");
+        GetIconCallback = Callback;
 #if UNITY_ANDROID
         AndroidPicker.BrowseImage(true);
 #elif UNITY_IPHONE
@@ -61,7 +150,41 @@ public class DataParser : Base
 #endif
     }
 
-    public static string UploadImage(Texture2D image)
+    public static void GetAtlas(string[] pictures, Action<Texture2D> Callback)
+    {
+        behaviour.StartCoroutine(GetAtlasCoroutine(ParseStringArrayToString(pictures), Callback));
+    }
+
+    public static IEnumerator GetAtlasCoroutine (string pictures, Action<Texture2D> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("pictures", pictures);
+
+        WWW www = new WWW(URL + "/Tools/CreateAtlas", form);
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+        if(jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+
+        if(www.texture)
+        {
+            Callback(www.texture);
+        }
+
+        Debug.Log("Error: No texture found!");
+    }
+
+    public static string UploadImage(Texture2D image, Action<string> Callback)
     {
         return "";
     }
@@ -100,14 +223,116 @@ public class DataParser : Base
         }
     }
 
-    public static void AuthenticateUser(Action<string, string, Authentication.LoginType> Callback, Authentication.LoginType logintType, string sessionKey)
+    public static void AuthenticateUser(Action<string, int, Authentication.LoginType> Callback, Authentication.LoginType loginType, string sessionKey, string profilePicture, string name, string email, string bio, string facebookUserToken, string googleUserToken, string facebookUser)
     {
-        Callback("", "", logintType);
+        SpinnerController.instance.Show();
+        behaviour.StartCoroutine(AuthenticateUserCoroutine(Callback, loginType, sessionKey, profilePicture, name, email, bio, facebookUserToken, googleUserToken, facebookUser));
     }
 
-    public static void AuthenticateUser(Action<string, string, Authentication.LoginType> Callback, Authentication.LoginType logintType, string userId, string sessionKey)
+    private static IEnumerator AuthenticateUserCoroutine(Action<string, int, Authentication.LoginType> Callback, Authentication.LoginType loginType, string sessionKey, string profilePicture, string name, string email, string bio, string facebookUserToken, string googleUserToken, string facebookUser)
     {
-        Callback("", "", logintType);
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", sessionKey);
+        form.AddField("profilePicture", profilePicture);
+        form.AddField("name", name);
+        form.AddField("email", email);
+        form.AddField("bio", bio);
+        form.AddField("facebookUserToken", facebookUserToken);
+        form.AddField("googleUserToken", googleUserToken);
+        form.AddField("facebookUser", facebookUser);
+        string platform = "Android";
+#if UNITY_IOS
+        platform = "IOS";
+#endif
+        form.AddField("platform", Application.platform.ToString());
+
+        WWW www = new WWW(URL + "/User/Authenticate", form);
+
+        yield return www;
+
+        SpinnerController.instance.Hide();
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            FB.LogOut();
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+        JSONObject jsonObj = new JSONObject(www.text);
+        if(jsonObj.GetField("success"))
+        {
+            Debug.Log("Success! Index: " + jsonObj.GetField("index").ToString());
+            Callback(sessionKey, int.Parse(jsonObj.GetField("index").ToString()), loginType);
+        }
+        else
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            FB.LogOut();
+        }
+    }
+
+    public static void GetUser(int id, Action<UserModel> Callback)
+    {
+        behaviour.StartCoroutine(GetUserCoroutine(id, Callback));
+    }
+
+    public static IEnumerator GetUserCoroutine(int id, Action<UserModel> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("index", id);
+        WWW www = new WWW(URL + "/User/Find", form);
+
+        yield return www;
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Failed: " + www.error);
+        }
+        else
+        {
+            JSONObject jsonObj = new JSONObject(www.text);
+            if (jsonObj.GetField("error"))
+            {
+                Debug.Log("Error: " + jsonObj.GetField("error").ToString());
+            }
+            else
+            {
+                UserModel model = new UserModel(jsonObj);
+                Callback(model);
+                Debug.Log("Success: Got user info: " + model.name);
+            }
+        }
+    }
+
+    public static void GetUser(string sessionToken, Action<UserModel> Callback)
+    {
+        behaviour.StartCoroutine(GetUserCoroutine(sessionToken, Callback));
+    }
+
+    public static IEnumerator GetUserCoroutine(string sessionToken, Action<UserModel> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", sessionToken);
+        WWW www = new WWW(URL + "/User/Find", form);
+        
+        yield return www;
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Failed: " + www.error);
+        }
+        else
+        {
+            JSONObject jsonObj = new JSONObject(www.text);
+            if (jsonObj.GetField("error"))
+            {
+                Debug.Log("Error: " + jsonObj.GetField("error").ToString());
+            }
+            else
+            {
+                UserModel model = new UserModel(jsonObj);
+                Callback(model);
+                Debug.Log("Success: Got user info: " + model.name);
+            }
+        }
     }
 
     public static UserModel GetUser(int id)
@@ -126,34 +351,153 @@ public class DataParser : Base
         return userModel;
     }
 
-    public static UserModel[] GetUsers(int[] users)
+    public static void GetUsers(int[] users, Action<UserModel[]> Callback)
     {
-        UserModel[] models = new UserModel[users.Length];
-        for(int i = 0; i < users.Length; i++)
+        behaviour.StartCoroutine(GetUsersCoroutine(users, Callback));
+    }
+
+    public static IEnumerator GetUsersCoroutine(int[] users, Action<UserModel[]> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("index", ParseIntArrayToString(users));
+
+        WWW www = new WWW(URL + "/User/FindUsers", form);
+
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
         {
-            models[i] = GetUser(users[i]);
+            Debug.Log("Error: " + www.error);
+            yield break;
         }
-        return models;
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if(jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+
+        List<UserModel> userModels = new List<UserModel>();
+        for (int i = 0; i < jsonObj.list.Count; i++)
+        {
+            userModels.Add(new UserModel(jsonObj.list[i]));
+        }
+        Callback(userModels.ToArray());
     }
 
-    public static UserModel EditUser(UserModel newModel, int id, string token)
+    public static void EditUser(UserModel newModel, string token, Action Callback)
     {
-        UserModel userModel = newModel;
-        userModel.index = id;
-        userModel.sessionToken = token;
-        return userModel;
+        behaviour.StartCoroutine(EditUserCoroutine(newModel, token, Callback));
     }
 
-    public static UserModel[] SearchUsers(string search)
+    public static IEnumerator EditUserCoroutine(UserModel newModel, string token, Action Callback)
     {
-        UserModel[] models = new UserModel[1];
-        models[0] = new UserModel(0, null, null, null, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[600], new int[3], new int[20], new int[5], "hello", "hello", "hello", "hello", true, true, true);
-        return models;
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", token);
+        if(!String.IsNullOrEmpty(newModel.profilePicture))
+            form.AddField("profilePicture", newModel.profilePicture);
+        if (!String.IsNullOrEmpty(newModel.name))
+            form.AddField("name", newModel.name);
+
+        form.AddField("bio", newModel.bio);
+        form.AddField("snapchatUser", newModel.snapchatUser);
+        form.AddField("facebookUser", newModel.facebookUser);
+        form.AddField("instagramUser", newModel.instagramUser);
+        form.AddField("twitterUser", newModel.twitterUser);
+        form.AddField("notifyLikesComments", newModel.notifyLikesComments.ToString());
+        form.AddField("notifyFollowers", newModel.notifyFollowers.ToString());
+        form.AddField("notifyFollowing", newModel.notifyFollowing.ToString());
+
+        WWW www = new WWW(URL + "/User/Update", form);
+
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject obj = new JSONObject(www.text);
+
+        if(obj.GetField("error"))
+        {
+            Debug.Log("Error: " + obj.GetField("error"));
+            yield break;
+        }
+
+        Debug.Log("Success: " + obj.GetField("success"));
+
+        Callback();
     }
 
-    public static void SendReportUser(int userId, string reason)
+    public static void SearchUsers(string search, Action<UserModel[]> Callback)
     {
+        behaviour.StartCoroutine(SearchUsersCoroutine(search, Callback));
+    }
 
+    public static IEnumerator SearchUsersCoroutine(string search, Action<UserModel[]> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("name", search);
+
+        WWW www = new WWW(URL + "/User/FindUsers", form);
+
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+        JSONObject jsonObj = new JSONObject(www.text);
+        if(jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            Callback(null);
+            yield break;
+        }
+
+        List<UserModel> userModels = new List<UserModel>();
+        for (int i = 0; i < jsonObj.list.Count; i++)
+        {
+            userModels.Add(new UserModel(jsonObj.list[i]));
+        }
+        Callback(userModels.ToArray());
+    }
+
+    public static void SendReportUser(int userId, string reason, Action Callback)
+    {
+        behaviour.StartCoroutine(SendReportUserCoroutine(userId, reason, Callback));
+    }
+
+    public static IEnumerator SendReportUserCoroutine(int userId, string reason, Action Callback)
+    {
+        Debug.Log("Sending a report to user: " + userId + ", for: " + reason);
+        WWWForm form = new WWWForm();
+        form.AddField("index", userId);
+        form.AddField("reason", reason);
+        WWW www = new WWW(URL + "/User/Report", form);
+
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+        if(jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+
+        Debug.Log("Success: " + jsonObj.GetField("success") + " and index is: " + jsonObj.GetField("index"));
+        Callback();
     }
 
     public static ProtestModel EditProtest(ProtestModel newModel, string token)
@@ -170,13 +514,13 @@ public class DataParser : Base
 
     public static ProtestModel GetProtest(int protest)
     {
-        return new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[2], new int[3], new int[5], Authentication.user.index);
+        return new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[2], new int[3], new int[5], Authentication.userIndex);
     }
 
     public static ProtestModel[] GetProtestList()
     {
         ProtestModel[] models = new ProtestModel[1];
-        models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[20000], new int[3], new int[3], new int[3], Authentication.user.index);
+        models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[20000], new int[3], new int[3], new int[3], Authentication.userIndex);
         return models;
     }
 
@@ -193,7 +537,7 @@ public class DataParser : Base
     public static ProtestModel[] SearchProtests(string search)
     {
         ProtestModel[] models = new ProtestModel[1];
-        models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[0], new int[3], new int[3], Authentication.user.index);
+        models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[0], new int[3], new int[3], Authentication.userIndex);
         return models;
     }
 
@@ -278,8 +622,36 @@ public class DataParser : Base
 
     }
 
-    public static void Follow(int index)
+    public static void Follow(int index, Action<bool> Callback)
     {
+        behaviour.StartCoroutine(FollowCoroutine(index, Callback));
+    }
 
+    public static IEnumerator FollowCoroutine(int index, Action<bool> Callback)
+    {
+        Debug.Log("Following user: " + index);
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", Authentication.auth_token);
+        form.AddField("index", index.ToString());
+
+        WWW www = new WWW(URL + "/User/Follow", form);
+
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if(jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+        Debug.Log("Success: " + jsonObj.GetField("success"));
+        Callback(!jsonObj.GetField("success").ToString().Contains("unfollowed"));
     }
 }

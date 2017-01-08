@@ -13,33 +13,98 @@ public class Authentication : Base
 
     public static bool authenticated;
 
-    private static string localKey = "SessionKeyV1.0";
-    private static string loginTypeKey = "LoginTypeV1.0";
+    private bool completeFB;
+    private bool completeGoogle = false;
 
-    public static UserModel user
-    {
-        get
-        {
-            if (authenticated)
-                return DataParser.GetUser(auth_token);
-            else
-                return null;
-        }
-    }
+    public static int userIndex;
+    public static UserModel userModel;
 
     void Awake()
     {
-        FB.Init();
-        if(PlayerPrefs.HasKey(localKey))
+        LoadingController.instance._View.loading = true;
+        FB.Init(OnInitComplete);
+
+        InvokeRepeating("CheckInternet", 1, 15);
+    }
+
+    public static void RefreshUserModel(Action Callback)
+    {
+        CallbackRefresh = Callback;
+        DataParser.GetUser(userIndex, GetUserCallback);
+    }
+    private static Action CallbackRefresh;
+
+    private static void GetUserCallback(UserModel userModel)
+    {
+        //OneSignal.SendTag("identification", userIndex.ToString());
+        Authentication.userModel = userModel;
+
+        if (CallbackRefresh == null)
+            return;
+
+        CallbackRefresh();
+    }
+
+    void OnInitComplete()
+    {
+        if (completeGoogle)
+            return;
+
+        completeFB = true;
+        
+        if(FB.IsLoggedIn)
         {
-            Debug.Log(PlayerPrefs.GetString(localKey));
-            Authenticate(PlayerPrefs.GetString(localKey), (LoginType)PlayerPrefs.GetInt(loginTypeKey));
+            Debug.Log("Login Success!");
+            Authentication.Authenticate(AccessToken.CurrentAccessToken.UserId, AccessToken.CurrentAccessToken.TokenString, Authentication.LoginType.Facebook, "", "", "", "", AccessToken.CurrentAccessToken.UserId, "", "");
+        }
+        else
+        {
+            Debug.Log("Login failed!");
+            LoadingController.instance._View.loading = false;
+        }
+    }
+
+    void CheckInternet()
+    {
+        StartCoroutine(CheckInternetCoroutine());
+    }
+
+    IEnumerator CheckInternetCoroutine()
+    {
+        if (!responded)
+            yield break;
+        WWW www = new WWW(DataParser.URL);
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            responded = false;
+            UnAuthenticate();
+            Popup.Create("Connection lost", "Could not connect to the Protest servers. Check your connection or contact us", ResponsePopup, "Popup", "Reconnect", "Contact");
+        }
+    }
+
+    private bool responded = true;
+
+    void ResponsePopup(int response)
+    {
+        responded = true;
+        switch(response)
+        {
+            case 1:
+                Debug.Log("Reconnecting");
+                CheckInternet();
+                break;
+            case 2:
+                Debug.Log("Contacting");
+                ProtestListController.instance.Contact();
+                break;
         }
     }
 
     public void Update()
     {
-        if(!authenticated)
+        if (!authenticated)
         {
             LoadingController.instance.Show();
         }
@@ -50,7 +115,7 @@ public class Authentication : Base
         Log.Create(0, "Login to facebook event", "Authentication");
 
         // Login to facebook and return the key to call the authenticate method
-        string[] permissions = new string[] { "email", "public_profile" };
+        string[] permissions = new string[] { "public_profile", "email" };
         FB.LogInWithReadPermissions(permissions, CallbackFacebook);
     }
     
@@ -65,51 +130,41 @@ public class Authentication : Base
 
     public enum LoginType {  Google, Facebook  };
 
-    public static void Authenticate(string userId, string sessionKey, LoginType loginType)
+    public static void Authenticate(string userId, string sessionKey, LoginType loginType, string profilePicture = "", string name = "", string email = "", string bio = "", string facebookUserToken = "", string googleUserToken = "", string facebookUser = "")
     {
         Log.Create(2, "Authentication Checking Session: " + sessionKey + " | UserId = " + userId, "Authentication");
 
-        DataParser.AuthenticateUser(ResponseAuthenticate, loginType, userId, sessionKey);
+        DataParser.AuthenticateUser(ResponseAuthenticate, loginType, sessionKey.Trim(), profilePicture, name, email, bio, facebookUserToken, googleUserToken, facebookUser);
     }
 
-    private static void ResponseAuthenticate(string sessionToken, string userToken, LoginType loginType)
+    private static void ResponseAuthenticate(string sessionToken, int newId, LoginType loginType)
     {
         authenticated = true;
         auth_token = sessionToken;
-        PlayerPrefs.SetInt(loginTypeKey, (int)loginType);
-        PlayerPrefs.SetString(localKey, auth_token);
+        userIndex = newId;
         Log.Create(2, "Authentication Successful", "Authentication", auth_token);
 
         LoadingController.instance.Load();
     }
 
-    public static void Authenticate(string sessionKey, LoginType loginType)
+    public static void Logout()
     {
-        Log.Create(2, "Authentication Checking Session: " + sessionKey, "Authentication");
-
-        DataParser.AuthenticateUser(ResponseAuthenticate, loginType, sessionKey);
+        if(FB.IsLoggedIn)
+        {
+            FB.LogOut();
+        }
+        authenticated = false;
+        LoadingController.instance._View.loading = false;
+        Log.Create(2, "Logging out", "Authentication");
     }
 
     public static void UnAuthenticate()
     {
-        Log.Create(2, "Unauthentication Successful", "Authentication", auth_token);
+        Log.Create(2, "Unauthentication Successful", "Authentication");
         authenticated = false;
         auth_token = "";
-        PlayerPrefs.DeleteKey(localKey);
-    }
 
-
-    // Move this to server
-    // *******************************************************************
-    private static string character = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789!@#$%^&*()-=[]/?<>,.";
-    private static string GenerateSessionKey()
-    {
-        DateTime now = DateTime.UtcNow;
-        string randomString = "";
-        for(int i = 0; i < 20; i++)
-        {
-            randomString += character[UnityEngine.Random.Range(0, character.Length - 1)];
-        }
-        return (randomString + "|" + now.ToShortDateString() + "|" + now.ToShortTimeString() + "|" + now.Millisecond).Replace(' ', '_');
+        if (FB.IsLoggedIn)
+            FB.LogOut();
     }
 }

@@ -22,13 +22,24 @@ public class ProtestEditController : Controller
     {
         _view = view.GetComponent<ProtestEditView>();
         instance = this;
-        PickerEventListener.onImageLoad += OnImageLoad;
+    }
+
+    void Update()
+    {
+        if (!view.gameObject.activeInHierarchy)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ProtestListController.instance.Show();
+            Hide();
+        }
     }
 
     private Controller _returnController;
     public void Show(Controller returnController)
     {
-        model = new ProtestModel(0, "", "", "", "", "", "", "", "", 00f, 0.0f, null, null, new int[0], null, Authentication.user.index);
+        model = new ProtestModel(0, "", "", "", "", "", "", "", "", 00f, 0.0f, null, null, new int[0], null, Authentication.userIndex);
         model = DataParser.CreateProtest(model);
         creating = true;
         _returnController = returnController;
@@ -59,7 +70,10 @@ public class ProtestEditController : Controller
             DataParser.EditProtest(model, Authentication.auth_token);
         else
             DataParser.CreateProtest(model);
+
         Log.Create(2, "Complete Protest", "ProtestEditController");
+        ProtestController.instance.Show(model.index, ProtestListController.instance);
+        Hide();
     }
 
     public void Delete()
@@ -133,13 +147,20 @@ public class ProtestEditController : Controller
 
     public void UpdateIcon()
     {
-        DataParser.ChangeIcon();
+        DataParser.ChangeIcon(GetIconCallback);
     }
 
-    void OnImageLoad(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    void GetIconCallback(Texture2D texture)
     {
-        _view.iconImage.sprite = Sprite.Create(tex, new Rect(0, 0, 128, 128), Vector2.zero);
-        model.protestPicture = DataParser.UploadImage(tex);
+        Debug.Log("Got Texture");
+        texture.Resize(128, 128);
+        _view.iconImage.sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(128, 128)), new Vector2(0, 0));
+        DataParser.UploadImage(texture, UploadImageCallback);
+    }
+
+    public void UploadImageCallback(string url)
+    {
+        model.protestPicture = url;
     }
 
     string _date;
@@ -148,7 +169,32 @@ public class ProtestEditController : Controller
 #if UNITY_ANDROID
         OnPickDateClick();
 #endif
+#if UNITY_IOS
+        OnShowDateAndTimePickerIos();
+#endif
     }
+
+#if UNITY_IOS
+
+    public void OnShowDateAndTimePickerIos()
+    {
+        IGDateTimePicker.ShowDateAndTimePicker(OnDateAndTimeTimeSelectedIos,
+            () => Debug.Log("Picking date and time was cancelled"));
+    }
+
+    void OnDateAndTimeTimeSelectedIos(DateTime dateTime)
+    {
+        Debug.Log(string.Format("Date & Time selected: year: {0}, month: {1}, day {2}, hour: {3}, minute: {4}",
+                dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute));
+        if (dateTime < DateTime.Today)
+        {
+            IGDialogs.ShowOneBtnDialog("Not valid", "Enter a valid date", "Okay", () => Debug.Log("Button clicked!"));
+
+            return;
+        }
+        model.date = DataParser.UnparseDate(dateTime);
+    }
+#endif
 
 #if UNITY_ANDROID
     public void OnPickDateClick()

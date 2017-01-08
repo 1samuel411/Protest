@@ -9,8 +9,7 @@
 #import "GoodiesUiMessageDelegate.h"
 
 @implementation GoodiesUiMessageDelegate
-- (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result
-{
+- (void)messageComposeViewController:(MFMessageComposeViewController *)controller didFinishWithResult:(MessageComposeResult)result {
     switch (result) {
         case MessageComposeResultCancelled:
             _callbackCancelled();
@@ -21,12 +20,12 @@
         case MessageComposeResultSent:
             _callbackSentSuccessfully();
             break;
-            
+
         default:
             _callbackCancelled();
             break;
     }
-    
+
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 @end
