@@ -24,13 +24,13 @@ public class LoadingController : Controller
         instance = this;
         _View = view.GetComponent<LoadingView>();
 
-        //OneSignal.StartInit("a7227cd5-532a-4b87-9dd0-080dfda19ab2")
-        //.HandleNotificationOpened(HandleNotificationOpened)
-        //.EndInit();
+        OneSignal.StartInit("a7227cd5-532a-4b87-9dd0-080dfda19ab2")
+        .HandleNotificationOpened(HandleNotificationOpened)
+        .EndInit();
 
-        //OneSignal.SetSubscription(true);
+        OneSignal.SetSubscription(true);
     }
-    /*
+
     // Gets called when the player opens the notification.
     private static void HandleNotificationOpened(OSNotificationOpenedResult result)
     {
@@ -43,7 +43,7 @@ public class LoadingController : Controller
             ListController.instance.Show(ListController.ShowType.followers, Authentication.userIndex);
         }
     }
-    */
+
     public void LoginFacebook()
     {
         Authentication.Login_Facebook(CallbackFacebook);

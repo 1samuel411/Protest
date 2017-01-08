@@ -36,7 +36,7 @@ public class Authentication : Base
 
     private static void GetUserCallback(UserModel userModel)
     {
-        //OneSignal.SendTag("identification", userIndex.ToString());
+        OneSignal.SendTag("identification", userIndex.ToString());
         Authentication.userModel = userModel;
 
         if (CallbackRefresh == null)
