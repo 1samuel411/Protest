@@ -38,14 +38,33 @@ public class DataParser : Base
         }
     }
 
+    void OnEnable()
+    {
+        PickerEventListener.onImageSelect += OnImageSelect;
+        PickerEventListener.onImageLoad += OnImageLoad;
+        PickerEventListener.onVideoSelect += OnVideoSelect;
+        PickerEventListener.onError += OnError;
+        PickerEventListener.onCancel += OnCancel;
+    }
+
+    void OnDisable()
+    {
+        PickerEventListener.onImageSelect -= OnImageSelect;
+        PickerEventListener.onImageLoad -= OnImageLoad;
+        PickerEventListener.onVideoSelect -= OnVideoSelect;
+        PickerEventListener.onError -= OnError;
+        PickerEventListener.onCancel -= OnCancel;
+    }
+
+    void OnVideoSelect(string vidPath)
+    {
+        Debug.Log("Video Location : " + vidPath);
+        Handheld.PlayFullScreenMovie("file://" + vidPath, Color.blue, FullScreenMovieControlMode.Full, FullScreenMovieScalingMode.AspectFill);
+    }
+
     void Awake()
     {
         behaviour = this;
-
-        PickerEventListener.onImageSelect += OnImageSelect;
-        PickerEventListener.onImageLoad += OnImageLoad;
-        PickerEventListener.onError += OnError;
-        PickerEventListener.onCancel += OnCancel;
     }
 
     void OnImageSelect(string imgPath, ImageAndVideoPicker.ImageOrientation imgOrientation)
