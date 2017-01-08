@@ -2358,25 +2358,6 @@ Prefab:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 319573347}
-    - target: {fileID: 224913796965567122, guid: 9fccc765910dc5944ad759f481f2b8c0,
-        type: 2}
-      propertyPath: m_AnchorMax.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 224913796965567122, guid: 9fccc765910dc5944ad759f481f2b8c0,
-        type: 2}
-      propertyPath: m_AnchorMax.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1373102802996882, guid: 9fccc765910dc5944ad759f481f2b8c0, type: 2}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 224909288147451488, guid: 9fccc765910dc5944ad759f481f2b8c0,
-        type: 2}
-      propertyPath: m_SizeDelta.y
-      value: -371.59995
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 9fccc765910dc5944ad759f481f2b8c0, type: 2}
   m_IsPrefabParent: 0
@@ -3132,7 +3113,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed9892dee8d871442820b704924f0ae5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  poolSystems: []
+  poolSystems:
+  - name: Protest
+    id: 0
+    poolObject: {fileID: 114402339680887218, guid: 428cee053e5c3c443829911368a98672,
+      type: 2}
+    poolObjects: []
+    initializeAmount: 16
+  - name: User
+    id: 0
+    poolObject: {fileID: 114234675570267068, guid: b1edb691497bcca4ba966fe702ef6907,
+      type: 2}
+    poolObjects: []
+    initializeAmount: 16
+  - name: Protest Icon
+    id: 0
+    poolObject: {fileID: 114705205585284686, guid: 9909774cad07b0248be1435bee5ec5d9,
+      type: 2}
+    poolObjects: []
+    initializeAmount: 0
+  - name: Contributions
+    id: 0
+    poolObject: {fileID: 114611368990314072, guid: 1ae48f4e6ec668440a07fe86ef15a2f8,
+      type: 2}
+    poolObjects: []
+    initializeAmount: 0
+  - name: Chat
+    id: 0
+    poolObject: {fileID: 114463790360841446, guid: 8105234ac2b77f741ac16fc0ee808b3a,
+      type: 2}
+    poolObjects: []
+    initializeAmount: 0
+  - name: Chat-body
+    id: 0
+    poolObject: {fileID: 114196121802728134, guid: 07ef8442f2abb6845897a10457a25a35,
+      type: 2}
+    poolObjects: []
+    initializeAmount: 0
 --- !u!114 &1649379097 stripped
 MonoBehaviour:
   m_PrefabParentObject: {fileID: 114226807892090590, guid: 74b8cafa594d16846b6c4bb886df9c07,

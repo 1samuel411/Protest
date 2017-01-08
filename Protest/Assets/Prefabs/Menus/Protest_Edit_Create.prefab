@@ -389,7 +389,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1393098356140032
 GameObject:
   m_ObjectHideFlags: 1
@@ -1559,7 +1559,7 @@ MonoBehaviour:
   dateButton: {fileID: 114291790326016074}
   dateText: {fileID: 114280011440975440}
   completeButton: {fileID: 114727890685720932}
-  iconImage: {fileID: 0}
+  iconImage: {fileID: 114948299949905566}
   donationsGoalInput: {fileID: 114275897147734060}
   paypalEmailInput: {fileID: 114510544764367150}
   contributionNameInput: {fileID: 114415859191307822}
@@ -5001,7 +5001,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -0.000030104056, y: 0.000061035156}
-  m_SizeDelta: {x: -10, y: 0}
+  m_SizeDelta: {x: -10, y: -371.59995}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224913796965567122
 RectTransform:
@@ -5017,7 +5017,7 @@ RectTransform:
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}

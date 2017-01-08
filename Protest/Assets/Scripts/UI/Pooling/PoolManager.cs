@@ -60,7 +60,8 @@ public class PoolManager : MonoBehaviour
 
     public void Clear(PoolSystem poolSystem)
     {
-        poolSystem.poolObjects.Where(t => t.inUse).ToList().ForEach(t => t.Hide());
+        if(poolSystem != null && poolSystem.poolObjects.Count > 0 && poolSystem.poolObjects != null)
+            poolSystem.poolObjects.Where(t => t.inUse).ToList().ForEach(t => t.Hide());
     }
 
     public void Clear()
