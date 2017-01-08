@@ -40,23 +40,24 @@ public class DataParser : Base
 
     void OnEnable()
     {
-        PickerEventListener.onImageSelect += OnImageSelect;
-        PickerEventListener.onImageLoad += OnImageLoad;
-        PickerEventListener.onVideoSelect += OnVideoSelect;
-        PickerEventListener.onError += OnError;
-        PickerEventListener.onCancel += OnCancel;
+        PickerEventListener.onImageSelect += OnImageSelects;
+        PickerEventListener.onImageLoad += OnImageLoads;
+        PickerEventListener.onVideoSelect += OnVideoSelects;
+        PickerEventListener.onError += OnErrors;
+        PickerEventListener.onCancel += OnCancels;
+        Debug.Log("Finished registering listeners for image");
     }
 
     void OnDisable()
     {
-        PickerEventListener.onImageSelect -= OnImageSelect;
-        PickerEventListener.onImageLoad -= OnImageLoad;
-        PickerEventListener.onVideoSelect -= OnVideoSelect;
-        PickerEventListener.onError -= OnError;
-        PickerEventListener.onCancel -= OnCancel;
+        PickerEventListener.onImageSelect -= OnImageSelects;
+        PickerEventListener.onImageLoad -= OnImageLoads;
+        PickerEventListener.onVideoSelect -= OnVideoSelects;
+        PickerEventListener.onError -= OnErrors;
+        PickerEventListener.onCancel -= OnCancels;
     }
 
-    void OnVideoSelect(string vidPath)
+    void OnVideoSelects(string vidPath)
     {
         Debug.Log("Video Location : " + vidPath);
         Handheld.PlayFullScreenMovie("file://" + vidPath, Color.blue, FullScreenMovieControlMode.Full, FullScreenMovieScalingMode.AspectFill);
@@ -67,25 +68,34 @@ public class DataParser : Base
         behaviour = this;
     }
 
-    void OnImageSelect(string imgPath, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    void OnImageSelects(string imgPath, ImageAndVideoPicker.ImageOrientation imgOrientation)
     {
         Debug.Log("Image Location : " + imgPath);
     }
 
-    void OnImageLoad(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
+    void OnImageLoads(string imgPath, Texture2D tex, ImageAndVideoPicker.ImageOrientation imgOrientation)
     {
         Debug.Log("Image Location : " + imgPath);
         GetIconCallback(tex);
     }
 
-    void OnError(string errorMsg)
+    void OnErrors(string errorMsg)
     {
         Debug.Log("Error : " + errorMsg);
     }
 
-    void OnCancel()
+    void OnCancels()
     {
         Debug.Log("Cancel by user");
+    }
+
+    public void ChangeIconLocal()
+    {
+#if UNITY_ANDROID
+        AndroidPicker.BrowseImage(true);
+#elif UNITY_IPHONE
+		IOSPicker.BrowseImage(true); // true for pick and crop
+#endif
     }
 
     public static int[] ParseStringToIntArray(string stringToParse)
@@ -162,11 +172,7 @@ public class DataParser : Base
     {
         Debug.Log("Changing icon!");
         GetIconCallback = Callback;
-#if UNITY_ANDROID
-        AndroidPicker.BrowseImage(true);
-#elif UNITY_IPHONE
-		IOSPicker.BrowseImage(true); // true for pick and crop
-#endif
+        behaviour.gameObject.GetComponent<DataParser>().ChangeIconLocal();
     }
 
     public static void GetAtlas(string[] pictures, Action<Texture2D> Callback)
