@@ -3121,33 +3121,39 @@ MonoBehaviour:
     poolObjects: []
     initializeAmount: 16
   - name: User
-    id: 0
+    id: 1
     poolObject: {fileID: 114234675570267068, guid: b1edb691497bcca4ba966fe702ef6907,
       type: 2}
     poolObjects: []
     initializeAmount: 16
   - name: Protest Icon
-    id: 0
+    id: 2
     poolObject: {fileID: 114705205585284686, guid: 9909774cad07b0248be1435bee5ec5d9,
       type: 2}
     poolObjects: []
-    initializeAmount: 0
+    initializeAmount: 16
   - name: Contributions
-    id: 0
+    id: 3
     poolObject: {fileID: 114611368990314072, guid: 1ae48f4e6ec668440a07fe86ef15a2f8,
       type: 2}
     poolObjects: []
-    initializeAmount: 0
+    initializeAmount: 10
   - name: Chat
-    id: 0
+    id: 4
     poolObject: {fileID: 114463790360841446, guid: 8105234ac2b77f741ac16fc0ee808b3a,
       type: 2}
     poolObjects: []
-    initializeAmount: 0
+    initializeAmount: 32
   - name: Chat-body
-    id: 0
+    id: 5
     poolObject: {fileID: 114196121802728134, guid: 07ef8442f2abb6845897a10457a25a35,
       type: 2}
+    poolObjects: []
+    initializeAmount: 32
+  currentSystem:
+    name: 
+    id: 0
+    poolObject: {fileID: 0}
     poolObjects: []
     initializeAmount: 0
 --- !u!114 &1649379097 stripped

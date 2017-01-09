@@ -152,7 +152,6 @@ public class SearchController : Controller
     {
         SpinnerController.instance.Hide();
         // Clear
-        PoolManager.instance.Clear();
         PoolManager.instance.SetPath(1);
         if (_view.selection == SearchView.SearchSelection.Protests)
             PoolManager.instance.SetPath(0);

@@ -35,7 +35,7 @@ public class PoolManager : MonoBehaviour
         }
     }
 
-    private PoolSystem currentSystem;
+    public PoolSystem currentSystem;
     public void SetPath(int id)
     {
         currentSystem = poolSystems.Where(t => t.id == id).ToList().FirstOrDefault();
@@ -43,11 +43,15 @@ public class PoolManager : MonoBehaviour
 
     public PoolObject Create(PoolSystem poolSystem, Transform parent)
     {
-        PoolObject nonTakenObject = poolSystem.poolObjects.Where(t => t.inUse == false).FirstOrDefault();
-        if(nonTakenObject == null)
+        PoolObject nonTakenObject = null;
+        if (poolSystem.poolObjects != null && poolSystem.poolObjects.Count > 0)
         {
-            nonTakenObject = GameObject.Instantiate(poolSystem.poolObject);
-            poolSystem.poolObjects.Add(nonTakenObject);
+            nonTakenObject = poolSystem.poolObjects.Where(t => t.inUse == false).FirstOrDefault();
+            if(nonTakenObject == null)
+            {
+                nonTakenObject = GameObject.Instantiate(poolSystem.poolObject);
+                poolSystem.poolObjects.Add(nonTakenObject);
+            }
         }
         nonTakenObject.Create(parent);
         return nonTakenObject;
@@ -79,7 +83,7 @@ public class PoolSystem
 
     public PoolObject poolObject;
 
-    public List<PoolObject> poolObjects;
+    public List<PoolObject> poolObjects = new List<PoolObject>();
 
     public int initializeAmount;
 }
