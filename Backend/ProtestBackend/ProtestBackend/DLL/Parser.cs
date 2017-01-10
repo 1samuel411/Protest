@@ -50,5 +50,19 @@ namespace ProtestBackend.DLL
             }
             return intList.ToArray();
         }
+
+        public static DateTime ParseDate(string input)
+        {
+            string[] inputSeperated = input.Split('.');
+
+            DateTime dateTime = new DateTime(Int32.Parse(inputSeperated[0]) + 2000, Int32.Parse(inputSeperated[1]), Int32.Parse(inputSeperated[2]), Int32.Parse(inputSeperated[3]), Int32.Parse(inputSeperated[4]), Int32.Parse(inputSeperated[5]));
+            return dateTime;
+        }
+
+        public static string UnparseDate(DateTime date)
+        {
+            string newDate = (date.Year - 2000) + "." + date.Month + "." + date.Day + "." + date.Hour + "." + date.Minute + "." + date.Second;
+            return newDate;
+        }
     }
 }

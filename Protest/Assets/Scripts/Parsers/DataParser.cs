@@ -98,6 +98,23 @@ public class DataParser : Base
 #endif
     }
 
+    public static string GetCount(int amount)
+    {
+        string countString ="";
+        if (amount >= 1000)
+        {
+            countString = Math.Round((amount / 1000.0f), 1).ToString() + "k";
+        }
+        else
+            countString = amount.ToString();
+
+        if (amount >= 1000000)
+        {
+            countString = Math.Round((amount / 1000000.0f), 0).ToString() + "m";
+        }
+        return countString;
+    }
+
     public static int[] ParseStringToIntArray(string stringToParse)
     {
         if (String.IsNullOrEmpty(stringToParse))
@@ -376,15 +393,17 @@ public class DataParser : Base
         return userModel;
     }
 
-    public static void GetUsers(int[] users, Action<UserModel[]> Callback)
+    public static void GetUsers(int[] users, string searchString, Action<UserModel[]> Callback)
     {
-        behaviour.StartCoroutine(GetUsersCoroutine(users, Callback));
+        behaviour.StartCoroutine(GetUsersCoroutine(users, searchString, Callback));
     }
 
-    public static IEnumerator GetUsersCoroutine(int[] users, Action<UserModel[]> Callback)
+    public static IEnumerator GetUsersCoroutine(int[] users, string searchString, Action<UserModel[]> Callback)
     {
+        Debug.Log("Finding users with search:" + searchString + ".");
         WWWForm form = new WWWForm();
         form.AddField("index", ParseIntArrayToString(users));
+        form.AddField("name", searchString);
 
         WWW www = new WWW(URL + "/User/FindUsers", form);
 
@@ -678,5 +697,27 @@ public class DataParser : Base
         }
         Debug.Log("Success: " + jsonObj.GetField("success"));
         Callback(!jsonObj.GetField("success").ToString().Contains("unfollowed"));
+    }
+
+    public static void GetNotifications(int index, Action<int> Callback)
+    {
+        behaviour.StartCoroutine(GetNotificationsCoroutine(index, Callback));
+    }
+
+    public static IEnumerator GetNotificationsCoroutine(int index, Action<int> Callback)
+    {
+        yield return new WaitForSeconds(0.5f);
+        Callback(UnityEngine.Random.Range(0, 10000));
+    }
+
+    public static void GetNews(int index, string searchString, Action<NewsModel[]> Callback)
+    {
+        behaviour.StartCoroutine(GetNewsCoroutine(index, searchString, Callback));
+    }
+
+    public static IEnumerator GetNewsCoroutine(int index, string searchString, Action<NewsModel[]> Callback)
+    {
+        yield return new WaitForSeconds(0.5f);
+        Callback(new NewsModel[0]);
     }
 }

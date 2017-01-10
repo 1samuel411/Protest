@@ -33,4 +33,24 @@ public class SearchListObjectView : View
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => { userCallback(userMode.index); });
     }
+
+    public void ChangeInfoNews(NewsModel newsModel, Sprite sprite, Action<NewsModel> notificationCallback)
+    {
+        iconImage.sprite = sprite;
+        nameText.text = newsModel.text;
+        string text = "";
+        TimeSpan span = (DataParser.ParseDate(newsModel.notificationTime) - DateTime.UtcNow);
+        if (span.Days > 0)
+            text = span.Days.ToString() + " Days";
+        else if (span.Hours > 0)
+            text = span.Hours.ToString() + " Hours";
+        else if (span.Minutes > 0)
+            text = span.Minutes.ToString() + " Minutes";
+        else if (span.Seconds > 0)
+            text = span.Seconds.ToString() + " Seconds";
+        dateText.text = text + " ago";
+
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => { notificationCallback(newsModel); });
+    }
 }

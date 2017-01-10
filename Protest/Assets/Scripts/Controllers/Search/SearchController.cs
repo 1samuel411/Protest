@@ -162,6 +162,17 @@ public class SearchController : Controller
         // Populate List
         for (int i = _beginIndex; i < _endIndex; i++)
         {
+            if (_view.selection == SearchView.SearchSelection.Users)
+                if (Authentication.userIndex == usersData[i].index)
+                {
+                    _rect.x += _rect.width;
+                    if (_rect.x >= (_atlas.width))
+                    {
+                        _rect.y -= _rect.height;
+                        _rect.x = 0;
+                    }
+                    continue;
+                }
             _obj = PoolManager.instance.Create(_view.listHolder);
             _sprite = Sprite.Create(_atlas, _rect, Vector2.zero);
 

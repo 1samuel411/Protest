@@ -104,10 +104,21 @@ namespace ProtestBackend.Controllers.User
             if (String.IsNullOrEmpty(nameQuery))
                 nameQuery = Request.Form["name"];
 
+            nameQuery = nameQuery.Trim();
+
             System.Diagnostics.Debug.WriteLine("name: " + nameQuery);
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
-                string command = "SELECT id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ")";
+                SqlCommand command = new SqlCommand();
+                if (String.IsNullOrEmpty(nameQuery))
+                {
+                    command.CommandText = "SELECT id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ")";
+                }
+                else
+                {
+                    command.CommandText = "SELECT id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ") AND name LIKE '%' + @nameQuery + '%'";
+                    command.Parameters.AddWithValue("@nameQuery", nameQuery);
+                }
                 DataTable table = ConnectionManager.CreateQuery(command);
                 if (table.Rows.Count <= 0)
                 {
@@ -373,13 +384,13 @@ namespace ProtestBackend.Controllers.User
 
                 // Update sessionToken
                 command.Parameters.Clear();
-                command.CommandText = "UPDATE Users SET lastLogin=@lastLogin, sessionToken=@sessionToken, lastDevice=@lastDevice WHERE id=@id";
+                command.CommandText = "UPDATE Users SET lastLogin=@lastLogin, sessionToken=@sessionToken, lastDevice=@lastDevice, lastLoginTime=@lastLoginTime WHERE id=@id";
                 command.Parameters.AddWithValue("@sessionToken", sessionToken);
                 command.Parameters.AddWithValue("@lastLogin", lastLogin);
                 command.Parameters.AddWithValue("@lastDevice", platform);
+                command.Parameters.AddWithValue("@lastLoginTime", Parser.UnparseDate(DateTime.UtcNow));
                 command.Parameters.AddWithValue("@id", table.Rows[0].Field<int>("id"));
                 int response = ConnectionManager.CreateCommand(command);
-                System.Diagnostics.Debug.WriteLine(response + " ------------------------------");
                 if (response > 0)
                     return Content(SuccessCreation.Create("Successfully authenticated the user", table.Rows[0].Field<int>("id")).ToString());
                 else
@@ -392,7 +403,7 @@ namespace ProtestBackend.Controllers.User
                 command.Parameters.Clear();
 
                 #region Create command
-                string sqlQuery = "INSERT INTO Users (sessionToken, email, profilePicture, name, bio, lastDevice, facebookUserToken, googleUserToken, lastLogin, facebookUser) VALUES (";
+                string sqlQuery = "INSERT INTO Users (sessionToken, email, profilePicture, name, bio, lastDevice, facebookUserToken, googleUserToken, lastLogin, facebookUser, time, lastLoginTime) VALUES (";
                 command.CommandText = sqlQuery;
 
                 command = ConnectionManager.AddProperty(command, "sessionToken", sessionToken, true);
@@ -427,6 +438,8 @@ namespace ProtestBackend.Controllers.User
                 command = ConnectionManager.AddProperty(command, "lastLogin", lastLogin, true);
                 command = ConnectionManager.AddProperty(command, "facebookUser", facebookUser, true);
                 #endregion
+                command = ConnectionManager.AddProperty(command, "time", Parser.UnparseDate(DateTime.UtcNow), true);
+                command = ConnectionManager.AddProperty(command, "lastLoginTime", Parser.UnparseDate(DateTime.UtcNow), true);
                 #endregion
                 command.CommandText += ")";
                 int response = ConnectionManager.CreateCommand(command);
@@ -507,7 +520,7 @@ namespace ProtestBackend.Controllers.User
                     if(notifyUser)
                     {
                         // notify user we unfollowed
-                        NotificationManager.SendNotification(indexint, user.Rows[0].Field<string>("name") + " unfollowed you.");
+                        NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " unfollowed you.", NotificationManager.Type.Follow);
                     }
                     return Content(Success.Create("Successfully unfollowed user"));
                 }
@@ -518,14 +531,14 @@ namespace ProtestBackend.Controllers.User
             }
 
             // Create if not
-            command = new SqlCommand("INSERT INTO Following (userId, followingId) VALUES (" + id + "," + indexint + ")");
+            command = new SqlCommand("INSERT INTO Following (userId, followingId, time) VALUES (" + id + "," + indexint + "," + Parser.UnparseDate(DateTime.UtcNow) + ")");
             int response = ConnectionManager.CreateCommand(command);
             if (response >= 1)
             {
                 if(notifyUser)
                 {
                     //notify user we followed
-                    NotificationManager.SendNotification(indexint, user.Rows[0].Field<string>("name") + " followed you.");
+                    NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " followed you.", NotificationManager.Type.Follow);
                 }
                 return Content(Success.Create("Successfully followed user"));
             }
@@ -558,9 +571,10 @@ namespace ProtestBackend.Controllers.User
             {
                 return Content(Error.Create("Index does not exist"));
             }
-            command = new SqlCommand("INSERT INTO ReportsUsers VALUES (@index, @reason)");
+            command = new SqlCommand("INSERT INTO ReportsUsers VALUES (@index, @reason, @time)");
             command.Parameters.AddWithValue("@index", indexint);
             command.Parameters.AddWithValue("@reason", reason);
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
             int response = ConnectionManager.CreateCommand(command);
             if (response > 0)
             {

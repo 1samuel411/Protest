@@ -37,11 +37,7 @@ public class LoadingController : Controller
         if (Authentication.authenticated == false)
             return;
 
-        OSNotificationPayload payload = result.notification.payload;
-        if(payload.body.Contains("followed"))
-        {
-            ListController.instance.Show(ListController.ShowType.followers, Authentication.userIndex);
-        }
+        ListController.instance.Show(ListController.ShowType.news, Authentication.userModel, ProtestListController.instance);
     }
 
     public void LoginFacebook()

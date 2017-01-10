@@ -52,10 +52,10 @@ public class ProfileView : View
         nameText.text = userModel.name;
         bioText.text = userModel.bio;
 
-        followersText.text = userModel.followers.Length.ToString();
-        followingText.text = userModel.following.Length.ToString();
-        attendedText.text = userModel.protestsAttended.Length.ToString();
-        createdText.text = userModel.protestsCreated.Length.ToString();
+        followersText.text = DataParser.GetCount(userModel.followers.Length);
+        followingText.text = DataParser.GetCount(userModel.following.Length);
+        attendedText.text = DataParser.GetCount(userModel.protestsAttended.Length);
+        createdText.text = DataParser.GetCount(userModel.protestsCreated.Length);
 
         DataParser.SetSprite(profileImage, userModel.profilePicture);
         

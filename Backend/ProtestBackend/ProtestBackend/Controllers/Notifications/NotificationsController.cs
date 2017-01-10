@@ -23,21 +23,33 @@ namespace ProtestBackend.Controllers.Notifications
         public ActionResult Create()
         {
             #region Get Data
+            string from = Request.QueryString["fromIndex"];
             string index = Request.QueryString["index"];
             string body = Request.QueryString["body"];
+            string type = Request.QueryString["type"];
+            if (String.IsNullOrEmpty(from))
+                from = Request.Form["fromIndex"];
             if (String.IsNullOrEmpty(index))
                 index = Request.Form["index"];
             if (String.IsNullOrEmpty(body))
                 body = Request.Form["body"];
+            if (String.IsNullOrEmpty(type))
+                type = Request.Form["type"];
 
             int indexint = -1;
+            int fromInt = -1;
             if (!int.TryParse(index, out indexint))
+            {
+                return Content(Error.Create("Index could not be parsed"));
+            }
+
+            if (!int.TryParse(from, out fromInt))
             {
                 return Content(Error.Create("Index could not be parsed"));
             }
             #endregion
 
-            NotificationManager.SendNotification(indexint, body);
+            NotificationManager.SendNotification(fromInt, indexint, body, (NotificationManager.Type) Enum.Parse(typeof(NotificationManager.Type), type, true));
 
             return Content(Success.Create("Sent notification"));
         }

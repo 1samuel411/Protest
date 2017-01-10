@@ -27,9 +27,12 @@ public class ProfileEditController : Controller
         }
     }
 
-    public void Show(UserModel modelToEdit)
+    Controller previousController;
+    public void Show(UserModel modelToEdit, Controller previousController = null)
     {
         _view.userModel = modelToEdit;
+        this.previousController = previousController;
+        previousController.Hide();
         Show();
     }
 
@@ -49,6 +52,7 @@ public class ProfileEditController : Controller
 
     public void Return()
     {
+        previousController.Show();
         Hide();
     }
 

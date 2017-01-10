@@ -35,36 +35,36 @@ public class MenuBarView : View
         bioText.text = userToDisplay.bio;
 
         attendedButton.onClick.AddListener(ProtestsAttendedCallback);
-        attendedText.text = userToDisplay.protestsAttended.Length.ToString();
+        attendedText.text = DataParser.GetCount(userToDisplay.protestsAttended.Length);
 
         protestsButton.onClick.AddListener(ProtestsCreatedCallback);
-        protestsText.text = userToDisplay.protestsCreated.Length.ToString();
+        protestsText.text = DataParser.GetCount(userToDisplay.protestsCreated.Length);
 
         followersButton.onClick.AddListener(FollowersCallback);
-        followersText.text = userToDisplay.followers.Length.ToString();
+        followersText.text = DataParser.GetCount(userToDisplay.followers.Length);
 
         followingButton.onClick.AddListener(FollowingCallback);
-        followingText.text = userToDisplay.following.Length.ToString();
+        followingText.text = DataParser.GetCount(userToDisplay.following.Length);
     }
 
     private void ProtestsAttendedCallback()
     {
-        ListController.instance.Show(ListController.ShowType.attended, userToDisplay.index);
+        ListController.instance.Show(ListController.ShowType.attended, userToDisplay, ProtestListController.instance);
     }
 
     private void ProtestsCreatedCallback()
     {
-        ListController.instance.Show(ListController.ShowType.created, userToDisplay.index);
+        ListController.instance.Show(ListController.ShowType.created, userToDisplay, ProtestListController.instance);
     }
 
     private void FollowersCallback()
     {
-        ListController.instance.Show(ListController.ShowType.followers, userToDisplay.index);
+        ListController.instance.Show(ListController.ShowType.followers, userToDisplay, ProtestListController.instance);
     }
 
     private void FollowingCallback()
     {
-        ListController.instance.Show(ListController.ShowType.following, userToDisplay.index);
+        ListController.instance.Show(ListController.ShowType.following, userToDisplay, ProtestListController.instance);
     }
 
     public void OpenProfile()
@@ -74,7 +74,20 @@ public class MenuBarView : View
     
     public void Logout()
     {
-        ProtestListController.instance.GetView().HideMenu();
-        Authentication.Logout();
+        Popup.Create("Logout", "Are you sure you want to logout?", LogoutPopupCallback, "Popup", "Continue", "Cancel");
+    }
+
+    void LogoutPopupCallback(int response)
+    {
+        if(response == 1)
+        {
+            ProtestListController.instance.GetView().HideMenu();
+            Authentication.Logout();
+        }
+    }
+
+    public void OpenNews()
+    {
+        ListController.instance.Show(ListController.ShowType.news, Authentication.userModel, ProtestListController.instance);
     }
 }

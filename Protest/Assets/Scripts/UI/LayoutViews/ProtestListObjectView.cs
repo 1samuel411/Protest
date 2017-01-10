@@ -31,19 +31,7 @@ public class ProtestListObjectView : View
         goingText.text = protestToDisplay.going.Length.ToString();
 
 
-        string likesCountString = "";
-        if (newModel.likes.Length >= 1000)
-        {
-            likesCountString = (newModel.likes.Length / 1000.0f).ToString() + "k";
-        }
-        else
-            likesCountString = newModel.likes.Length.ToString();
-
-        if (newModel.likes.Length >= 1000000)
-        {
-            likesCountString = (newModel.likes.Length / 1000000.0f).ToString() + "m";
-        }
-        likesText.text = likesCountString;
+        likesText.text = DataParser.GetCount(newModel.likes.Length);
 
 
         iconImage.sprite = sprite;

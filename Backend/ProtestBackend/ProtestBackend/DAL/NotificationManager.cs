@@ -11,6 +11,7 @@ using System.Web.Configuration;
 using System.Web.Http;
 using System.Text;
 using System.IO;
+using System.Data.SqlClient;
 
 namespace ProtestBackend.DAL
 {
@@ -19,8 +20,11 @@ namespace ProtestBackend.DAL
         private const string ONESIGNALID =  "OneSignalId";
         private const string ONESIGNALAPI = "OneSignalAPI";
 
-        public static void SendNotification(int id, string body)
+        public enum Type { Follow, Protest };
+
+        public static void SendNotification(int from, int targetId, string body, Type type)
         {
+            #region One Signal
             var request = WebRequest.Create("https://onesignal.com/api/v1/notifications") as HttpWebRequest;
 
             request.KeepAlive = true;
@@ -32,7 +36,7 @@ namespace ProtestBackend.DAL
             byte[] byteArray = Encoding.UTF8.GetBytes("{"
                                                     + "\"app_id\": \"" + WebConfigurationManager.AppSettings[ONESIGNALID] + "\","
                                                     + "\"contents\": {\"en\": \"" + body + "\"},"
-                                                    + "\"filters\": [{\"field\": \"tag\", \"key\": \"identification\", \"relation\": \"=\", \"value\": \"" + id.ToString() + "\"}]}");
+                                                    + "\"filters\": [{\"field\": \"tag\", \"key\": \"identification\", \"relation\": \"=\", \"value\": \"" + targetId.ToString() + "\"}]}");
 
             string responseContent = null;
 
@@ -55,8 +59,11 @@ namespace ProtestBackend.DAL
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
+            #endregion
 
-            System.Diagnostics.Debug.WriteLine(responseContent);
+            #region Database
+            SqlCommand command = new SqlCommand();
+            #endregion
         }
     }
 }

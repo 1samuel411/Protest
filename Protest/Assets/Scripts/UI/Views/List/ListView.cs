@@ -15,6 +15,8 @@ public class ListView : View
     public Button pageForwardButton;
     public Button pageBackButton;
 
+    public InputField searchInput;
+
     public void UpdateUI(ListController.ShowType showType)
     {
         if (showType == ListController.ShowType.attended)
@@ -25,8 +27,14 @@ public class ListView : View
             pageLabel.text = "Followers";
         if (showType == ListController.ShowType.following)
             pageLabel.text = "Following";
+        if (showType == ListController.ShowType.news)
+            pageLabel.text = "News";
     }
 
+    public void ChangeSearchString(string newValue)
+    {
+        ListController.instance.UpdateSearch(newValue);
+    }
 
     public void ForwardButton()
     {

@@ -112,7 +112,7 @@ public class ProtestGoingController : Controller
 
         // Get Atlas for protests: _beginIndex to _endIndex
         SpinnerController.instance.Show();
-        DataParser.GetUsers(ProtestController.instance.GetModel().going.Skip(_beginIndex).Take(_endIndex).ToArray(), GetUsersCallback);
+        DataParser.GetUsers(ProtestController.instance.GetModel().going.Skip(_beginIndex).Take(_endIndex).ToArray(), "", GetUsersCallback);
     }
 
     private void PopulateWithAtlas(Texture2D _atlas)

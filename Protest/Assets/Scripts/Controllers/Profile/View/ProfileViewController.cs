@@ -50,7 +50,7 @@ public class ProfileViewController : Controller
     public void EditProfile(UserModel user)
     {
         Log.Create(1, "Opening Edit Profile", "ProfileViewController");
-        ProfileEditController.instance.Show(_view.userModel);
+        ProfileEditController.instance.Show(_view.userModel, this);
     }
 
     private UserModel _reportUser;
@@ -132,26 +132,25 @@ public class ProfileViewController : Controller
     public void OpenFollowers()
     {
         Log.Create(1, "Opening Followers", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.followers, userModel.index);
-
+        ListController.instance.Show(ListController.ShowType.followers, userModel, ProtestListController.instance);
     }
 
     public void OpenFollowing()
     {
         Log.Create(1, "Opening Following", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.following, userModel.index);
+        ListController.instance.Show(ListController.ShowType.following, userModel, ProtestListController.instance);
     }
 
     public void OpenProtestsCreated()
     {
         Log.Create(1, "Opening Protests", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.created, userModel.index);
+        ListController.instance.Show(ListController.ShowType.created, userModel, ProtestListController.instance);
     }
 
     public void OpenAttended()
     {
         Log.Create(1, "Opening Attended", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.attended, userModel.index);
+        ListController.instance.Show(ListController.ShowType.attended, userModel, ProtestListController.instance);
     }
 
     public void OpenSnapchat(string url)

@@ -54,6 +54,20 @@ public class ProtestListController : Controller
         }
     }
 
+    public void LoadNotifications()
+    {
+        // Get coutn of notifications
+        DataParser.GetNotifications(Authentication.userIndex, HasNotificationsCallback);
+    }
+
+    public void HasNotificationsCallback(int count)
+    {
+        _view.notificationIcon.SetActive(count > 0);
+        _view.notificationMenubarIcon.SetActive(count > 0);
+        _view.notificationText.text = DataParser.GetCount(count);
+        _view.notificationMenubarText.text = DataParser.GetCount(count);
+    }
+
     public ProtestListView GetView()
     {
         return _view;

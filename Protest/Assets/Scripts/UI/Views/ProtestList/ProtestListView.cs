@@ -25,10 +25,23 @@ public class ProtestListView : View
 
     public RectTransform listHolder;
 
+    public GameObject notificationIcon;
+    public Text notificationText;
+
+    public GameObject notificationMenubarIcon;
+    public Text notificationMenubarText;
+
     void Start()
     {
         MenuBarController.instance.UpdateProfile();
         ProtestListController.instance.PopulateFromServer();
+        InvokeRepeating("LoadNotifications", 0, 10);
+    }
+
+    void LoadNotifications()
+    {
+        Debug.Log("Updating notifications!");
+        ProtestListController.instance.LoadNotifications();
     }
 
     void Update()
