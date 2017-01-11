@@ -39,6 +39,8 @@ public class Authentication : Base
         OneSignal.SendTag("identification", userIndex.ToString());
         Authentication.userModel = userModel;
 
+        ProtestListController.instance.LoadNotifications();
+
         if (CallbackRefresh == null)
             return;
 

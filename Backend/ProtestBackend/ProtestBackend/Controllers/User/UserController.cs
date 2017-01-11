@@ -106,7 +106,6 @@ namespace ProtestBackend.Controllers.User
 
             nameQuery = nameQuery.Trim();
 
-            System.Diagnostics.Debug.WriteLine("name: " + nameQuery);
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
                 SqlCommand command = new SqlCommand();
@@ -478,7 +477,7 @@ namespace ProtestBackend.Controllers.User
             }
             #endregion
 
-            SqlCommand command = new SqlCommand("SELECT id, name FROM Users WHERE sessionToken=@sessionToken");
+            SqlCommand command = new SqlCommand("SELECT id, name, profilePicture FROM Users WHERE sessionToken=@sessionToken");
             command.Parameters.AddWithValue("@sessionToken", sessionToken);
             
             // Check that the user we are going to modify exists
@@ -495,7 +494,7 @@ namespace ProtestBackend.Controllers.User
             }
 
             // Check that user we are going to follow exists
-            command = new SqlCommand("SELECT (notifyFollowers) FROM Users WHERE id=" + indexint);
+            command = new SqlCommand("SELECT notifyFollowers, name FROM Users WHERE id=" + indexint);
             DataTable tableIndex = ConnectionManager.CreateQuery(command);
 
             if(tableIndex.Rows.Count <= 0)
@@ -521,6 +520,7 @@ namespace ProtestBackend.Controllers.User
                     {
                         // notify user we unfollowed
                         NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " unfollowed you.", NotificationManager.Type.Follow);
+                        NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " unfollowed " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                     }
                     return Content(Success.Create("Successfully unfollowed user"));
                 }
@@ -531,7 +531,8 @@ namespace ProtestBackend.Controllers.User
             }
 
             // Create if not
-            command = new SqlCommand("INSERT INTO Following (userId, followingId, time) VALUES (" + id + "," + indexint + "," + Parser.UnparseDate(DateTime.UtcNow) + ")");
+            command = new SqlCommand("INSERT INTO Following (userId, followingId, time) VALUES (" + id + "," + indexint + "," + "@time" + ")");
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
             int response = ConnectionManager.CreateCommand(command);
             if (response >= 1)
             {
@@ -539,6 +540,7 @@ namespace ProtestBackend.Controllers.User
                 {
                     //notify user we followed
                     NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " followed you.", NotificationManager.Type.Follow);
+                    NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " is following " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                 }
                 return Content(Success.Create("Successfully followed user"));
             }

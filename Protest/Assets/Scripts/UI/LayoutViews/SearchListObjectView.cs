@@ -12,6 +12,8 @@ public class SearchListObjectView : View
     public Text dateText;
 
     public Button button;
+
+    public Button iconButton;
      
 
     public void ChangeInfoProtest(ProtestModel protestModel, Sprite sprite, Action<int> protestCallback)
@@ -39,18 +41,23 @@ public class SearchListObjectView : View
         iconImage.sprite = sprite;
         nameText.text = newsModel.text;
         string text = "";
-        TimeSpan span = (DataParser.ParseDate(newsModel.notificationTime) - DateTime.UtcNow);
+        TimeSpan span = DateTime.UtcNow - (DataParser.ParseDate(newsModel.notificationTime));
         if (span.Days > 0)
-            text = span.Days.ToString() + " Days";
+            text = span.Days.ToString() + " days";
         else if (span.Hours > 0)
-            text = span.Hours.ToString() + " Hours";
+            text = span.Hours.ToString() + " hours";
         else if (span.Minutes > 0)
-            text = span.Minutes.ToString() + " Minutes";
-        else if (span.Seconds > 0)
-            text = span.Seconds.ToString() + " Seconds";
+            text = span.Minutes.ToString() + " minutes";
+        else if (span.Seconds >= 0)
+            text = span.Seconds.ToString() + " seconds";
+        else
+            text = span.ToString();
         dateText.text = text + " ago";
 
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => { notificationCallback(newsModel); });
+
+        iconButton.onClick.RemoveAllListeners();
+        iconButton.onClick.AddListener(() => { ProfileViewController.instance.Show(newsModel.userIndex, ListController.instance); });
     }
 }

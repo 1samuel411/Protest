@@ -35,7 +35,7 @@ public class ProtestListView : View
     {
         MenuBarController.instance.UpdateProfile();
         ProtestListController.instance.PopulateFromServer();
-        InvokeRepeating("LoadNotifications", 0, 10);
+        InvokeRepeating("LoadNotifications", 10, 10);
     }
 
     void LoadNotifications()

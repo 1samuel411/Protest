@@ -420,6 +420,7 @@ public class DataParser : Base
         if(jsonObj.HasField("error"))
         {
             Debug.Log("Error: " + jsonObj.GetField("error"));
+            Callback(new UserModel[0]);
             yield break;
         }
 
@@ -699,25 +700,77 @@ public class DataParser : Base
         Callback(!jsonObj.GetField("success").ToString().Contains("unfollowed"));
     }
 
-    public static void GetNotifications(int index, Action<int> Callback)
+    public static void GetNotifications(int[] index, Action<int> Callback)
     {
         behaviour.StartCoroutine(GetNotificationsCoroutine(index, Callback));
     }
 
-    public static IEnumerator GetNotificationsCoroutine(int index, Action<int> Callback)
+    public static IEnumerator GetNotificationsCoroutine(int[] index, Action<int> Callback)
     {
-        yield return new WaitForSeconds(0.5f);
-        Callback(UnityEngine.Random.Range(0, 10000));
+        Debug.Log("Finding notifications count");
+        WWWForm form = new WWWForm();
+        form.AddField("index", ParseIntArrayToString(index));
+
+        WWW www = new WWW(URL + "/Notifications/FindNotificationCount", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            Callback(0);
+            yield break;
+        }
+
+        Debug.Log(www.text);
+
+        Callback((int)jsonObj.GetField("index").n);
     }
 
-    public static void GetNews(int index, string searchString, Action<NewsModel[]> Callback)
+    public static void GetNews(int[] index, string searchString, Action<NewsModel[]> Callback)
     {
         behaviour.StartCoroutine(GetNewsCoroutine(index, searchString, Callback));
     }
 
-    public static IEnumerator GetNewsCoroutine(int index, string searchString, Action<NewsModel[]> Callback)
+    public static IEnumerator GetNewsCoroutine(int[] index, string searchString, Action<NewsModel[]> Callback)
     {
-        yield return new WaitForSeconds(0.5f);
-        Callback(new NewsModel[0]);
+        Debug.Log("Finding notifications with search:" + searchString + ".");
+        WWWForm form = new WWWForm();
+        form.AddField("index", ParseIntArrayToString(index));
+        form.AddField("name", searchString);
+
+        WWW www = new WWW(URL + "/Notifications/FindNotifications", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            Callback(new NewsModel[0]);
+            yield break;
+        }
+
+        List<NewsModel> newsModels = new List<NewsModel>();
+        for (int i = 0; i < jsonObj.list.Count; i++)
+        {
+            newsModels.Add(new NewsModel(jsonObj.list[i]));
+        }
+        Callback(newsModels.ToArray());
     }
 }

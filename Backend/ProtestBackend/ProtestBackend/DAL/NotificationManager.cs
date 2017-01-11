@@ -12,6 +12,8 @@ using System.Web.Http;
 using System.Text;
 using System.IO;
 using System.Data.SqlClient;
+using ProtestBackend.DLL;
+using System.Data;
 
 namespace ProtestBackend.DAL
 {
@@ -60,10 +62,22 @@ namespace ProtestBackend.DAL
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
             #endregion
+        }
 
+        public static void CreateNotification(int from, int targetId, string picture, string body, Type type)
+        {
             #region Database
             SqlCommand command = new SqlCommand();
+            command.CommandText = "INSERT INTO Notifications (userIndex, targetIndex, text, type, time, picture) VALUES (@userIndex, @targetIndex, @text, @type, @time, @picture)";
+            command.Parameters.AddWithValue("@userIndex", from);
+            command.Parameters.AddWithValue("@targetIndex", targetId);
+            command.Parameters.AddWithValue("@text", body);
+            command.Parameters.AddWithValue("@type", type.ToString());
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
+            command.Parameters.AddWithValue("@picture", picture);
             #endregion
+
+            int response = ConnectionManager.CreateCommand(command);
         }
     }
 }

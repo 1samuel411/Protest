@@ -38,8 +38,14 @@ public class ListController : Controller
         set
         {
             _searchString = value;
-            if(model != null)
-                PopulateList(); 
+            if (model != null)
+                if (showType == ShowType.news)
+                {
+                    SpinnerController.instance.Show();
+                    DataParser.GetNews((model.following), searchString, GetNewsCallback);
+                }
+                else
+                    PopulateList(); 
         }
     }
 
@@ -79,7 +85,16 @@ public class ListController : Controller
         this.showType = showType;
         previousController.Hide();
         Show();
-        PopulateFromServer();
+        if (showType == ShowType.news)
+        {
+            if (model.following.Length <= 0)
+                Return();
+            DataParser.GetNews((model.following), searchString, GetNewsCallback);
+        }
+        else
+        {
+            PopulateFromServer();
+        }
         _view.UpdateUI(showType);
     }
 
@@ -87,6 +102,10 @@ public class ListController : Controller
 
     void GetNewsCallback(NewsModel[] models)
     {
+        _listIndex = 1;
+        _beginIndex = 0;
+        _endIndex = 0;
+
         newsModels = models;
 
         _pageLength = (newsModels.Length / _pageSize) + 1;
@@ -104,19 +123,15 @@ public class ListController : Controller
             SpinnerController.instance.Hide();
             return;
         }
-
-        DataParser.GetUsers(newsModels.Skip(_beginIndex).Take(_endIndex).Select(x => x.userIndex).ToArray(), "", GetUsersNewsCallback);
-    }
-
-    void GetUsersNewsCallback(UserModel[] models)
-    {
-        DataParser.GetAtlas(models.Skip(_beginIndex).Take(_endIndex).Select(x => x.profilePicture).ToArray(), PopulateWithAtlas);
+        DataParser.GetAtlas(newsModels.Skip(_beginIndex).Take(_endIndex).Select(x => x.picture).ToArray(), PopulateWithAtlas);
     }
 
     public void Return()
     {
         model = null;
+        newsModels = null;
         previousController.Show();
+        Debug.Log("Returning to: " + previousController.name);
         Hide();
     }
 
@@ -139,6 +154,8 @@ public class ListController : Controller
 
     public void PopulateFromServer()
     {
+        listIndex = 1;
+
         _beginIndex = 0;
         _endIndex = 0;
 
@@ -147,15 +164,12 @@ public class ListController : Controller
         if (showType == ShowType.attended || showType == ShowType.created)
             PoolManager.instance.SetPath(0);
         if (showType == ShowType.news)
-            PoolManager.instance.SetPath(6);
+            PoolManager.instance.SetPath(1);
         PoolManager.instance.Clear();
 
         protestsData = new ProtestModel[0];
         usersData = new UserModel[0];
-        newsModels = new NewsModel[0];
-
-        listIndex = 1;
-
+        
         Log.Create(1, "Populating from server", "ListController");
 
         if (showType == ShowType.attended)
@@ -166,9 +180,7 @@ public class ListController : Controller
             _pageLength = (model.followers.Length / _pageSize) + 1;
         else if (showType == ShowType.following)
             _pageLength = (model.following.Length / _pageSize) + 1;
-        else if (showType == ShowType.news)
-            _pageLength = (newsModels.Length / _pageSize) + 1;
-
+        
         PopulateList();
     }
     
@@ -210,7 +222,7 @@ public class ListController : Controller
         if (showType == ShowType.attended || showType == ShowType.created)
             PoolManager.instance.SetPath(0);
         if(showType == ShowType.news)
-            PoolManager.instance.SetPath(6);
+            PoolManager.instance.SetPath(1);
 
         PoolManager.instance.Clear();
      
@@ -240,7 +252,7 @@ public class ListController : Controller
         else if (showType == ShowType.following)
             DataParser.GetUsers(model.following.Skip(_beginIndex).Take(_endIndex).ToArray(), searchString, GetUsersCallback);
         else if (showType == ShowType.news)
-            DataParser.GetNews(model.index, searchString, GetNewsCallback);
+            DataParser.GetAtlas(newsModels.Skip(_beginIndex).Take(_endIndex).Select(x => x.picture).ToArray(), PopulateWithAtlas);
     }
 
     private void PopulateWithAtlas(Texture2D _atlas)
@@ -252,7 +264,7 @@ public class ListController : Controller
         if (showType == ShowType.attended || showType == ShowType.created)
             PoolManager.instance.SetPath(0);
         if (showType == ShowType.news)
-            PoolManager.instance.SetPath(6);
+            PoolManager.instance.SetPath(1);
         PoolManager.instance.Clear();
 
         _rect.position = new Vector2(0, _atlas.height - _rect.height);

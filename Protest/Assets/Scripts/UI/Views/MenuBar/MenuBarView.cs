@@ -88,6 +88,8 @@ public class MenuBarView : View
 
     public void OpenNews()
     {
+        PlayerPrefs.SetInt("lastCounts", ProtestListController.instance.notificationCount);
+        ProtestListController.instance.HasNotificationsCallback(ProtestListController.instance.notificationCount);
         ListController.instance.Show(ListController.ShowType.news, Authentication.userModel, ProtestListController.instance);
     }
 }

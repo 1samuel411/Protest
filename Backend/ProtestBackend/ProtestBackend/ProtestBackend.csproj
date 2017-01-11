@@ -195,6 +195,7 @@
     </Compile>
     <Compile Include="Models\DeviceRegistration.cs" />
     <Compile Include="Models\Error.cs" />
+    <Compile Include="Models\NotificationModel.cs" />
     <Compile Include="Models\SuccessCreation.cs" />
     <Compile Include="Models\Success.cs" />
     <Compile Include="Models\UserModel.cs" />

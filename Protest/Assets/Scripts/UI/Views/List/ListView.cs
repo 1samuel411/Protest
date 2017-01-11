@@ -48,6 +48,6 @@ public class ListView : View
 
     public void Return()
     {
-        ListController.instance.Hide();
+        ListController.instance.Return();
     }
 }

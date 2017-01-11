@@ -57,11 +57,16 @@ public class ProtestListController : Controller
     public void LoadNotifications()
     {
         // Get coutn of notifications
-        DataParser.GetNotifications(Authentication.userIndex, HasNotificationsCallback);
+        DataParser.GetNotifications(Authentication.userModel.following, HasNotificationsCallback);
     }
+
+    public int notificationCount;
 
     public void HasNotificationsCallback(int count)
     {
+        notificationCount = count;
+        if(PlayerPrefs.HasKey("lastCounts"))
+            count = count - PlayerPrefs.GetInt("lastCounts");
         _view.notificationIcon.SetActive(count > 0);
         _view.notificationMenubarIcon.SetActive(count > 0);
         _view.notificationText.text = DataParser.GetCount(count);
