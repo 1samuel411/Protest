@@ -78,17 +78,21 @@ public class ProtestListController : Controller
         return _view;
     }
 
-    public void Load(Action<int> callback)
+    float latitude;
+    float longitude;
+    public void Load(float latitude, float longitude, Action<int> callback)
     {
-        int response = 0;
         Log.Create(1, "Loading Info", "ProtestController");
+        CallbackReady = callback;
+        this.latitude = latitude;
+        this.longitude = longitude;
 
         MenuBarController.instance.UpdateProfile();
         PopulateFromServer();
 
-        callback.Invoke(response);
         Show();
     }
+    Action<int> CallbackReady;
 
     public void PageBack()
     {
@@ -114,7 +118,13 @@ public class ProtestListController : Controller
 
         Log.Create(1, "Populating from server", "ProtestController");
 
-        protestsData = DataParser.GetProtestList();
+        DataParser.GetProtestList(null, latitude, longitude, "", GetProtestList);
+    }
+
+    public void GetProtestList(ProtestModel[] models)
+    {
+        Debug.Log("Got list!");
+        protestsData = models;
         _pageLength = (protestsData.Length / _pageSize) + 1;
         _beginIndex = 0;
         _endIndex = 0;
@@ -151,12 +161,16 @@ public class ProtestListController : Controller
         _view.pageBackButton.interactable = (listIndex > 1);
 
         // Get Atlas for protests: _beginIndex to _endIndex
-        SpinnerController.instance.Show();
+        if(!LoadingController.instance.view.gameObject.activeInHierarchy)
+            SpinnerController.instance.Show();
         DataParser.GetAtlas(protestsData.Skip(_beginIndex).Take(_endIndex).Select(x => x.protestPicture).ToArray(), PopulateWithAtlas);
     }
 
     private void PopulateWithAtlas(Texture2D _atlas)
     {
+        if(!LoadingController.instance.view.gameObject.activeInHierarchy)
+            CallbackReady(0);
+
         SpinnerController.instance.Hide();
         // Clear
         PoolManager.instance.SetPath(0);

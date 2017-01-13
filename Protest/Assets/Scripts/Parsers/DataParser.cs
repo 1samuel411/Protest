@@ -141,11 +141,14 @@ public class DataParser : Base
 
     public static string ParseIntArrayToString(int[] arrayToParse)
     {
-        string value = "";
+        if (arrayToParse == null)
+            return "";
+
         if (arrayToParse.Length <= 0)
             return "";
 
-        for(int i = 0; i < arrayToParse.Length; i++)
+        string value = "";
+        for (int i = 0; i < arrayToParse.Length; i++)
         {
             value += arrayToParse[i].ToString() + ((i >= arrayToParse.Length - 1) ? "" : ",");
         }
@@ -279,7 +282,6 @@ public class DataParser : Base
     #region Authentication
     public static void AuthenticateUser(Action<string, int, Authentication.LoginType> Callback, Authentication.LoginType loginType, string sessionKey, string profilePicture, string name, string email, string bio, string facebookUserToken, string googleUserToken, string facebookUser)
     {
-        SpinnerController.instance.Show();
         behaviour.StartCoroutine(AuthenticateUserCoroutine(Callback, loginType, sessionKey, profilePicture, name, email, bio, facebookUserToken, googleUserToken, facebookUser));
     }
 
@@ -303,8 +305,6 @@ public class DataParser : Base
         WWW www = new WWW(URL + "/User/Authenticate", form);
 
         yield return www;
-
-        SpinnerController.instance.Hide();
 
         if (!String.IsNullOrEmpty(www.error))
         {
@@ -806,11 +806,45 @@ public class DataParser : Base
         Callback("https://pbs.twimg.com/media/Coz8twTWcAADpJQ.png");
     }
 
-    public static ProtestModel[] GetProtestList()
+    public static void GetProtestList(int[] protests, float lat, float lng, string searchString, Action<ProtestModel[]> Callback)
     {
-        ProtestModel[] models = new ProtestModel[1];
-        //models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[20000], new int[3], new int[3], new int[3], Authentication.userIndex);
-        return models;
+        behaviour.StartCoroutine(GetProtestsCoroutine(protests, lat, lng, searchString, Callback));
+    }
+
+    public static IEnumerator GetProtestsCoroutine(int[] protests, float lat, float lng, string searchString, Action<ProtestModel[]> Callback)
+    {
+        Debug.Log("Finding protests with search: " + searchString + ".");
+        WWWForm form = new WWWForm();
+        form.AddField("index", ParseIntArrayToString(protests));
+        form.AddField("name", searchString);
+        form.AddField("latitude", lat.ToString());
+        form.AddField("longitude", lng.ToString());
+
+        WWW www = new WWW(URL + "/Protest/FindProtests", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            Callback(new ProtestModel[0]);
+            yield break;
+        }
+
+        List<ProtestModel> protestModels = new List<ProtestModel>();
+        for (int i = 0; i < jsonObj.list.Count; i++)
+        {
+            protestModels.Add(new ProtestModel(jsonObj.list[i]));
+        }
+        Callback(protestModels.ToArray());
     }
 
     public static void DeleteProtest(int index)

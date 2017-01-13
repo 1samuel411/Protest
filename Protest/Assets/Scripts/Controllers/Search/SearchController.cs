@@ -55,7 +55,7 @@ public class SearchController : Controller
 
     public void Return()
     {
-        ProtestListController.instance.Load(ReturnCallback);
+        ProtestListController.instance.Show();
     }
 
     private void ReturnCallback(int response)

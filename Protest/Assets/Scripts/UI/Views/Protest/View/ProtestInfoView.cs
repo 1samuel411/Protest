@@ -43,7 +43,7 @@ public class ProtestInfoView : View
         if (model.date != "")
         {
             System.DateTime newTime = DataParser.ParseDate(model.date).ToLocalTime();
-            dateText.text = newTime.ToShortDateString() + "\n" + newTime.ToShortTimeString();
+            dateText.text = newTime.DayOfWeek + ", " + newTime.ToShortDateString() + "\n" + newTime.ToShortTimeString();
         }
         else
             dateText.text = "Set Date";

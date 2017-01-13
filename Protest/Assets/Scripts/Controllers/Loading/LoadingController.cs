@@ -101,15 +101,54 @@ public class LoadingController : Controller
     {
         Authentication.RefreshUserModel(null);
         _View.loading = true;
-        ProtestListController.instance.Load(LoadCallback);
-        Hide();
+        StartCoroutine(LoadCoroutine());
+    }
+
+    IEnumerator LoadCoroutine()
+    {
+        Debug.Log("Getting coordinates!");
+        Input.location.Start(600f);
+
+        // Wait until service initializes
+        int maxWait = 15;
+        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+        {
+            yield return new WaitForSeconds(1);
+            maxWait--;
+        }
+
+        // Service didn't initialize in 20 seconds
+        if (maxWait < 1)
+        {
+            Popup.Create("Location Services", "Your location retrieval process timed out!", null);
+            Debug.Log("Timed out");
+            Authentication.Logout();
+            yield break;
+        }
+
+        // Connection has failed
+        if (Input.location.status == LocationServiceStatus.Failed)
+        {
+            Debug.Log("Unable to determine device location");
+            Popup.Create("Location Services", "Retrieving your location failed. Location services are used to find Protests closest to you, please re-enable access to continue. (We value your privacy so, locations are NEVER stored, and are retrieved with an accuracy of 600 meters upon logging in to ensure your security)", null);
+            Authentication.Logout();
+            yield break;
+        }
+        else
+        {
+            // Access granted and location value could be retrieved
+            ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, LoadCallback);
+        }
+
+        // Stop service if there is no need to query location updates continuously
+        Input.location.Stop();
     }
 
     public void LoadCallback(int response)
     {
         if(response == 0)
         {
-            //Hide();
+            Hide();
         }
     }
 }

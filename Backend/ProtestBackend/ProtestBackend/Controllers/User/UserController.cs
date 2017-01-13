@@ -52,6 +52,21 @@ namespace ProtestBackend.Controllers.User
                         tableInfo = ConnectionManager.CreateQuery("SELECT userId FROM Following WHERE followingId=" + index);
                         user.followers = Parser.ParseColumnsToIntArray(tableInfo.Rows, 0);
 
+                        // Find protests
+                        tableInfo = ConnectionManager.CreateQuery("SELECT id FROM Protests WHERE userCreated=" + index);
+                        user.protestsCreated = Parser.ParseColumnsToIntArray(tableInfo.Rows, 0);
+
+                        string result = JsonConvert.SerializeObject(user);
+                        return Content(result);
+                    }
+
+                    if (table.Rows.Count <= 0)
+                    {
+                        return Content(Error.Create("Index does not exist"));
+                    }
+                    else
+                    {
+                        UserModel user = new UserModel(table.Rows[0], true);
                         string result = JsonConvert.SerializeObject(user);
                         return Content(result);
                     }
@@ -104,7 +119,8 @@ namespace ProtestBackend.Controllers.User
             if (String.IsNullOrEmpty(nameQuery))
                 nameQuery = Request.Form["name"];
 
-            nameQuery = nameQuery.Trim();
+            if(!String.IsNullOrEmpty(nameQuery))
+                nameQuery = nameQuery.Trim();
 
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {

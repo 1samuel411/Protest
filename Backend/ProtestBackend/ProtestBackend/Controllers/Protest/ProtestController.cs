@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
 
@@ -139,14 +140,13 @@ namespace ProtestBackend.Controllers.Protest
             command.Parameters.Clear();
             command.CommandText = "SELECT userId FROM Following WHERE followingId=" + userIndex;
             table = ConnectionManager.CreateQuery(command);
-
-            int targetIndex = 0;
-            for(int i = 0; i < table.Rows.Count; i++)
+            int targetIndex;
+            for(int i = 0; i < table.Rows.Count;i ++)
             {
                 targetIndex = table.Rows[i].Field<int>("userId");
                 NotificationManager.SendNotification(userIndex, targetIndex, userName + " created a new Protest.", NotificationManager.Type.Protest, "protest");
-                NotificationManager.CreateNotification(userIndex, targetIndex, userProfilePicture, userName + " created a new Protest, " + name, NotificationManager.Type.Protest);
             }
+            NotificationManager.CreateNotification(userIndex, indexCreated, userProfilePicture, userName + " created a new Protest, " + name, NotificationManager.Type.Protest);
 
             return Content(SuccessCreation.Create("Successfully created protest", indexCreated));
         }
@@ -334,16 +334,15 @@ namespace ProtestBackend.Controllers.Protest
             string userProfilePicture = table.Rows[0].Field<string>("profilePicture");
 
             command.Parameters.Clear();
-            command.CommandText = "SELECT userId FROM Following WHERE followingId=" + userIndex;
+            command.CommandText = "SELECT userId FROM GOING WHERE protestId=" + indexInt;
             table = ConnectionManager.CreateQuery(command);
-
-            int targetIndex = 0;
+            int targetIndex;
             for (int i = 0; i < table.Rows.Count; i++)
             {
                 targetIndex = table.Rows[i].Field<int>("userId");
-                NotificationManager.SendNotification(userIndex, targetIndex, userName + " updated a Protest.", NotificationManager.Type.Protest, "protest");
-                NotificationManager.CreateNotification(userIndex, targetIndex, userProfilePicture, userName + " updated the Protest, " + name, NotificationManager.Type.Protest);
+                NotificationManager.SendNotification(userIndex, targetIndex, userName + " updated a Protest you are attending.", NotificationManager.Type.Protest, "protest");
             }
+            NotificationManager.CreateNotification(userIndex, indexInt, userProfilePicture, userName + " updated the Protest, " + name, NotificationManager.Type.Protest);
 
             return Content(SuccessCreation.Create("Successfully updated protest", indexInt));
         }
@@ -385,5 +384,89 @@ namespace ProtestBackend.Controllers.Protest
             else
                 return Content(Error.Create("Internal error"));
         }
+        
+        // POST: FindProtests
+        // GET: FindProtests
+        public ActionResult FindProtests()
+        {
+            string indexQuery = Request.QueryString["index"];
+            if (String.IsNullOrEmpty(indexQuery))
+                indexQuery = Request.Form["index"];
+
+            string nameQuery = Request.QueryString["name"];
+            if (String.IsNullOrEmpty(nameQuery))
+                nameQuery = Request.Form["name"];
+
+            string latitude = Request.QueryString["latitude"];
+            if (String.IsNullOrEmpty(latitude))
+                latitude = Request.Form["latitude"];
+
+            string longitude = Request.QueryString["longitude"];
+            if (String.IsNullOrEmpty(longitude))
+                longitude = Request.Form["longitude"];
+            
+            if (!String.IsNullOrEmpty(nameQuery))
+                nameQuery = nameQuery.Trim();
+
+            DataTable table;
+
+            if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
+            {
+                SqlCommand command = new SqlCommand();
+                if (String.IsNullOrEmpty(nameQuery))
+                {
+                    command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date FROM Protests WHERE active='True' AND deleted='False' AND id IN (" + indexQuery + ")");
+                    command.Parameters.AddWithValue("@search", nameQuery);
+                    table = ConnectionManager.CreateQuery(command);
+                }
+                else
+                {
+                    command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date FROM Protests WHERE active='True' AND deleted='False' AND id IN (" + indexQuery + ") AND name LIKE '%' + @search + '%' OR location LIKE '%' + @search + '%'");
+                    command.Parameters.AddWithValue("@search", nameQuery);
+                    table = ConnectionManager.CreateQuery(command);
+                }
+            }
+            else if (!String.IsNullOrEmpty(nameQuery))
+            {
+                SqlCommand command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date FROM Protests WHERE active='True' AND deleted='False' AND name LIKE '%' + @search + '%' OR location LIKE '%' + @search + '%'");
+                command.Parameters.AddWithValue("@search", nameQuery);
+                table = ConnectionManager.CreateQuery(command);
+            }
+            else if (!String.IsNullOrEmpty(latitude) && !String.IsNullOrEmpty(longitude))
+            {
+                float lat, lng;
+                if (!float.TryParse(latitude, out lat))
+                    return Content(Error.Create("Latitude or longitude could not be parsed"));
+                if (!float.TryParse(longitude, out lng))
+                    return Content(Error.Create("Latitude or longitude could not be parsed"));
+
+                SqlCommand command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude FROM Protests WHERE active='True' AND deleted='False' ORDER BY ((latitude-@latitude)*(latitude-@latitude)) + ((longitude-@longitude)*(longitude-@longitude)) ASC");
+                command.Parameters.AddWithValue("@latitude", latitude);
+                command.Parameters.AddWithValue("@longitude", longitude);
+                table = ConnectionManager.CreateQuery(command);
+            }
+            else
+            {
+                return Content(Error.Create("Invalid request"));
+            }
+
+            if(table.Rows.Count <= 0)
+            {
+                return Content(Success.Create("Empty"));
+            }
+
+            string result = "";
+
+            ProtestModel[] protests = table.Select().Select(s => new ProtestModel(s)).ToArray();
+            for(int i = 0; i < protests.Length; i++)
+            {
+                protests[i].likesCount = ConnectionManager.CreateScalar(new SqlCommand("SELECT COUNT(*) FROM Likes WHERE protestId=" + protests[i].index.ToString()));
+                protests[i].goingCount = ConnectionManager.CreateScalar(new SqlCommand("SELECT COUNT(*) FROM Going WHERE protestId=" + protests[i].index.ToString()));
+            }
+            result = JsonConvert.SerializeObject(protests);
+
+            return Content(result);
+        }
+
     }
 }

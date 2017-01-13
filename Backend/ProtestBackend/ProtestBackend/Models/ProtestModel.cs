@@ -24,6 +24,9 @@ public class ProtestModel
     public int[] likes;
     public int[] going;
 
+    public int likesCount;
+    public int goingCount;
+
     public int[] contributions;
 
     public int[] chats;

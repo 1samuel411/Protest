@@ -84,22 +84,15 @@ namespace ProtestBackend.Controllers.Notifications
                 SqlCommand command = new SqlCommand();
                 if (String.IsNullOrEmpty(nameQuery))
                 {
-                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ")";
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ") ORDER BY id DESC";
                 }
                 else
                 {
-                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND text LIKE '%' + @nameQuery + '%'";
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ") AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
                     command.Parameters.AddWithValue("@nameQuery", nameQuery);
                 }
                 DataTable table = ConnectionManager.CreateQuery(command);
-                DataTable outputTable = table.Clone();
 
-                for (int i = table.Rows.Count - 1; i >= 0; i--)
-                {
-                    outputTable.ImportRow(table.Rows[i]);
-                }
-
-                table = outputTable;
                 if (table.Rows.Count <= 0)
                 {
                     return Content(Error.Create("Index does not exist"));
@@ -125,15 +118,15 @@ namespace ProtestBackend.Controllers.Notifications
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
                 SqlCommand command = new SqlCommand();
-                command.CommandText = "SELECT * FROM Notifications WHERE userIndex IN (" + indexQuery + ")";
-                DataTable table = ConnectionManager.CreateQuery(command);
-                if (table.Rows.Count <= 0)
+                command.CommandText = "SELECT COUNT(*) FROM Notifications WHERE targetIndex IN (" + indexQuery + ")";
+                int response = ConnectionManager.CreateScalar(command);
+                if (response <= 0)
                 {
                     return Content(Error.Create("Index does not exist"));
                 }
                 else
                 {
-                    return Content(SuccessCreation.Create("Successfully got the count", table.Rows.Count));
+                    return Content(SuccessCreation.Create("Successfully got the count", response));
                 }
             }
             return Content(Error.Create("Invalid request"));

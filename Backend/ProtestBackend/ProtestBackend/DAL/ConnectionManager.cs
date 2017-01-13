@@ -51,9 +51,9 @@ namespace ProtestBackend.DAL
                 connection = OpenConnection();
             request.Connection = connection;
             DataTable table = new DataTable();
-            SqlDataReader reader = request.ExecuteReader();
-            table.Load(reader);
-            reader.Close();
+            SqlDataAdapter reader = new SqlDataAdapter(request);
+            reader.Fill(table);
+            reader.Dispose();
             connection.Close();
             return table;
         }
@@ -77,6 +77,18 @@ namespace ProtestBackend.DAL
 
             command.Connection = connection;
             int response = command.ExecuteNonQuery();
+
+            connection.Close();
+            return response;
+        }
+
+        public static int CreateScalar(SqlCommand command, SqlConnection connection = null)
+        {
+            if (connection == null)
+                connection = OpenConnection();
+
+            command.Connection = connection;
+            int response = Convert.ToInt32(command.ExecuteScalar());
 
             connection.Close();
             return response;

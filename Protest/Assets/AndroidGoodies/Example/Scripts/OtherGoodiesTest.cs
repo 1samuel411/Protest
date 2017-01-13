@@ -176,9 +176,7 @@ namespace AndroidGoodiesExamples
             // Don't forget to also add the permissions you need to manifest!
             var permissions = new[]
             {
-                AGPermissions.WRITE_CONTACTS,
-                AGPermissions.CALL_PHONE,
-                AGPermissions.ACCESS_FINE_LOCATION,
+                AGPermissions.ACCESS_COARSE_LOCATION,
                 AGPermissions.READ_CALENDAR
             };
 
