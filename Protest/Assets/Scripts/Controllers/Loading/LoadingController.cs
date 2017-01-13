@@ -36,9 +36,23 @@ public class LoadingController : Controller
     {
         if (Authentication.authenticated == false)
             return;
-
-        ListController.instance.Show(ListController.ShowType.news, Authentication.userModel, ProtestListController.instance);
+        Debug.Log("Opened a notification!");
+        openNotifications = true;
     }
+
+    void Update()
+    {
+        if(Authentication.authenticated)
+        {
+            if(openNotifications)
+            {
+                openNotifications = false;
+                ListController.instance.Show(ListController.ShowType.news, Authentication.userModel, ProtestListController.instance);
+            }
+        }
+    }
+
+    public static bool openNotifications;
 
     public void LoginFacebook()
     {

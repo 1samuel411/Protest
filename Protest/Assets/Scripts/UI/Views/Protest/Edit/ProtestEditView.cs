@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using System;
 
 public class ProtestEditView : View
 {
@@ -59,7 +60,7 @@ public class ProtestEditView : View
     {
         infoButton.image.color = Color.white;
         contributionButton.image.color = Color.white;
-
+        
         if (selection == Selection.Info)
         {
             infoButton.image.color = colorSelected;
@@ -174,6 +175,11 @@ public class ProtestEditView : View
             return; 
         ContributionsModel model = new ContributionsModel(-1, contributionNameInput.text, int.Parse(contributionAmountInput.text), 0, ProtestEditController.instance.model.index);
         ProtestEditController.instance.CreateContribution(model);
+    }
+
+    public void ChangeLocation(string newLocation)
+    {
+        ProtestEditController.instance.ChangeLocation(newLocation);
     }
 
 }

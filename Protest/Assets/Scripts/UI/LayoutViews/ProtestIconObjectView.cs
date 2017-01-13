@@ -12,8 +12,13 @@ public class ProtestIconObjectView : View
 
     public void ChangeInfo(int model, Action<int> callback)
     {
-        DataParser.SetSprite(iconImage, DataParser.GetProtest(model).protestPicture);
+        DataParser.GetProtestIcon(model, GetImageCallback);
         inputButton.onClick.RemoveAllListeners();
         inputButton.onClick.AddListener(() => { callback(model); });
+    }
+
+    void GetImageCallback(string picture)
+    {
+        DataParser.SetSprite(iconImage, picture);
     }
 }

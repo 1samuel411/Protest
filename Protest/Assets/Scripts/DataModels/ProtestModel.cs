@@ -14,7 +14,6 @@ public class ProtestModel : Model
     public string date;
 
     public string datePosted;
-    public string dateUpdated;
 
     public string donationsEmail;
     public float donationCurrent;
@@ -29,16 +28,24 @@ public class ProtestModel : Model
 
     public int userCreated;
 
+    public float x;
+    public float y;
+
+    public bool active;
+
     public ProtestModel
         (
             int index,
             string protestPicture, string name, string description, string location, string date,
-            string datePosted, string dateUpdated,
+            string datePosted,
             string donationsEmail, float donationCurrent, float donationTarget,
             int[] likes, int[] going,
             int[] contributions,
             int[] chats,
-            int userCreated
+            int userCreated,
+            float x,
+            float y,
+            bool active
         )
     {
         this.index = index;
@@ -50,7 +57,6 @@ public class ProtestModel : Model
         this.date = date;
 
         this.datePosted = datePosted;
-        this.dateUpdated = dateUpdated;
 
         this.donationsEmail = donationsEmail;
         this.donationCurrent = donationCurrent;
@@ -64,5 +70,45 @@ public class ProtestModel : Model
         this.chats = chats;
 
         this.userCreated = userCreated;
+
+        this.x = x;
+        this.y = y;
+
+        this.active = active;
+    }
+
+    public ProtestModel(JSONObject jsonObj)
+    {
+        index = int.Parse(jsonObj.GetField("index").ToString());
+        protestPicture = jsonObj.GetField("protestPicture").str;
+        name = jsonObj.GetField("name").str;
+        description = jsonObj.GetField("description").str;
+        location = jsonObj.GetField("location").str;
+        date = jsonObj.GetField("date").str;
+        datePosted = jsonObj.GetField("datePosted").str;
+        donationsEmail = jsonObj.GetField("donationsEmail").str;
+        if (!string.IsNullOrEmpty(description))
+            description = description.Replace(@"\t", "");
+
+        going = new int[0];
+        likes = new int[0];
+        contributions = new int[0];
+        chats = new int[0];
+
+        if (jsonObj.HasField("going") && jsonObj.GetField("going").list != null)
+            going = DataParser.ParseJsonToIntArray(jsonObj.GetField("going").list);
+        if (jsonObj.HasField("likes") && jsonObj.GetField("likes").list != null)
+            likes = DataParser.ParseJsonToIntArray(jsonObj.GetField("likes").list);
+        if (jsonObj.HasField("contributions") && jsonObj.GetField("contributions").list != null)
+            contributions = DataParser.ParseJsonToIntArray(jsonObj.GetField("contributions").list);
+        if (jsonObj.HasField("chats") && jsonObj.GetField("chats").list != null)
+            chats = DataParser.ParseJsonToIntArray(jsonObj.GetField("chats").list);
+
+        userCreated = (int)jsonObj.GetField("userCreated").n;
+
+        x = jsonObj.GetField("latitude").n;
+        y = jsonObj.GetField("longitude").n;
+
+        active = jsonObj.GetField("active").b;
     }
 }

@@ -16,10 +16,10 @@ namespace ProtestBackend.Models
         public string success;
         public int index;
 
-        public SuccessCreation(string successMessag0e, int index)
+        public SuccessCreation(string successMessage, int index)
         {
             this.index = index;
-            success = successMessag0e;
+            success = successMessage;
         }
 
         public new string ToString()

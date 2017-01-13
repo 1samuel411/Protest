@@ -8,6 +8,7 @@ using ImageAndVideoPicker;
 using DeadMosquito.AndroidGoodies;
 using System.Linq;
 using Facebook.Unity;
+using System.Text.RegularExpressions;
 
 /**
  * Purpose: Take a string data and convert it to a native Data.
@@ -38,6 +39,12 @@ public class DataParser : Base
         }
     }
 
+    void Awake()
+    {
+        behaviour = this;
+    }
+
+    #region Picker
     void OnEnable()
     {
         PickerEventListener.onImageSelect += OnImageSelects;
@@ -62,12 +69,7 @@ public class DataParser : Base
         Debug.Log("Video Location : " + vidPath);
         Handheld.PlayFullScreenMovie("file://" + vidPath, Color.blue, FullScreenMovieControlMode.Full, FullScreenMovieScalingMode.AspectFill);
     }
-
-    void Awake()
-    {
-        behaviour = this;
-    }
-
+    
     void OnImageSelects(string imgPath, ImageAndVideoPicker.ImageOrientation imgOrientation)
     {
         Debug.Log("Image Location : " + imgPath);
@@ -96,8 +98,14 @@ public class DataParser : Base
 #elif UNITY_IPHONE
 		IOSPicker.BrowseImage(true); // true for pick and crop
 #endif
+#if UNITY_EDITOR
+        GetIconCallback(ListController.instance._atlas);
+#endif
     }
 
+    #endregion
+
+    #region Parsers
     public static string GetCount(int amount)
     {
         string countString ="";
@@ -183,7 +191,9 @@ public class DataParser : Base
         string newDate = (date.Year-2000) + "." + date.Month + "." + date.Day + "." + date.Hour + "." + date.Minute + "." + date.Second;
         return newDate;
     }
+    #endregion
 
+    #region Images
     public static Action<Texture2D> GetIconCallback;
     public static void ChangeIcon(Action<Texture2D> Callback)
     {
@@ -264,7 +274,9 @@ public class DataParser : Base
             callback(Sprite.Create(www.texture, new Rect(0, 0, size, size), Vector2.zero));
         }
     }
+    #endregion
 
+    #region Authentication
     public static void AuthenticateUser(Action<string, int, Authentication.LoginType> Callback, Authentication.LoginType loginType, string sessionKey, string profilePicture, string name, string email, string bio, string facebookUserToken, string googleUserToken, string facebookUser)
     {
         SpinnerController.instance.Show();
@@ -312,7 +324,9 @@ public class DataParser : Base
             FB.LogOut();
         }
     }
+    #endregion
 
+    #region User
     public static void GetUser(int id, Action<UserModel> Callback)
     {
         behaviour.StartCoroutine(GetUserCoroutine(id, Callback));
@@ -434,6 +448,12 @@ public class DataParser : Base
 
     public static void EditUser(UserModel newModel, string token, Action Callback)
     {
+        if(String.IsNullOrEmpty(newModel.name))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Missing information", "A name must be entered", null);
+            return;
+        }
         behaviour.StartCoroutine(EditUserCoroutine(newModel, token, Callback));
     }
 
@@ -545,27 +565,251 @@ public class DataParser : Base
         Callback();
     }
 
-    public static ProtestModel EditProtest(ProtestModel newModel, string token)
+    #endregion
+
+    #region Protests
+    public static void CreateProtest(ProtestModel model, string token, Action<int> Callback)
     {
-        ProtestModel protestModel = newModel;
-        // Check token
-        return protestModel;
+        behaviour.StartCoroutine(CreateProtestCoroutine(model, token, Callback));
+    }
+
+    public static IEnumerator CreateProtestCoroutine(ProtestModel model, string token, Action<int> Callback)
+    {
+        if (String.IsNullOrEmpty(model.name.Trim()))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a name filled out!", null);
+            yield break;
+        }
+        if (String.IsNullOrEmpty(model.location.Trim()) || model.x == 0 || model.y == 0)
+        { 
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a location filled out!", null);
+            yield break;
+        }
+        if (String.IsNullOrEmpty(model.date.Trim()))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a date filled out!", null);
+            yield break;
+        }
+        if (!String.IsNullOrEmpty(model.donationsEmail.Trim()))
+        {
+            string check = "^(?(\")(\".+?(?<!\\)\"@)| (([0 - 9a - z]((\\.(? !\\.)) |[-!#\\$%&'\\*\\+/=\\?\\^`\\{\\}\\|~\\w])*)(?<=[0-9a-z])@))(?(\\[)(\\[(\\d{1,3}\\.){3}\\d{1,3}\\])|(([0-9a-z][-\\w]*[0-9a-z]*\\.)+[a-z0-9][\\-a-z0-9]{0,22}[a-z0-9]))$";
+            if (!Regex.IsMatch(model.donationsEmail, check))
+            {
+                SpinnerController.instance.Hide();
+                Popup.Create("Invalid", "Email is not entered correctly, double check because this is where funds will be sent!", null);
+                yield break;
+            }
+            if (model.donationTarget <= 0)
+            {
+                SpinnerController.instance.Hide();
+                Popup.Create("Invalid", "A donation target must be set if you entered an email", null);
+                yield break;
+            }
+
+        }
+
+        if(String.IsNullOrEmpty(model.protestPicture))
+        {
+            model.protestPicture = Authentication.userModel.profilePicture;
+        }
+        Debug.Log("Creating Protest: " + model.name);
+        WWWForm form = new WWWForm();
+        form.AddField("protestPicture", model.protestPicture);
+        form.AddField("name", model.name);
+        form.AddField("description", model.description);
+        form.AddField("location", model.location);
+        form.AddField("latitude", model.x.ToString());
+        form.AddField("longitude", model.y.ToString());
+        form.AddField("date", model.date);
+        form.AddField("donationsEmail", model.donationsEmail);
+        form.AddField("donationTarget", model.donationTarget.ToString());
+        form.AddField("sessionToken", token);
+        WWW www = new WWW(URL + "/Protest/Create", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            yield break;
+        }
+
+        Callback((int)jsonObj.GetField("index").n);
+    }
+
+    public static void EditProtest(ProtestModel newModel, string token, Action<int> Callback)
+    {
+        behaviour.StartCoroutine(EditProtestCoroutine(newModel, token, Callback));
+    }
+
+    public static IEnumerator EditProtestCoroutine(ProtestModel model, string token, Action<int> Callback)
+    {
+        if (String.IsNullOrEmpty(model.name.Trim()))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a name filled out!", null);
+            yield break;
+        }
+        if (String.IsNullOrEmpty(model.location.Trim()) || model.x == 0 || model.y == 0)
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a location filled out!", null);
+            yield break;
+        }
+        if (String.IsNullOrEmpty(model.date.Trim()))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a date filled out!", null);
+            yield break;
+        }
+        if (!String.IsNullOrEmpty(model.donationsEmail.Trim()))
+        {
+            string check = "^(?(\")(\".+?(?<!\\)\"@)| (([0 - 9a - z]((\\.(? !\\.)) |[-!#\\$%&'\\*\\+/=\\?\\^`\\{\\}\\|~\\w])*)(?<=[0-9a-z])@))(?(\\[)(\\[(\\d{1,3}\\.){3}\\d{1,3}\\])|(([0-9a-z][-\\w]*[0-9a-z]*\\.)+[a-z0-9][\\-a-z0-9]{0,22}[a-z0-9]))$";
+            if (!Regex.IsMatch(model.donationsEmail, check))
+            {
+                SpinnerController.instance.Hide();
+                Popup.Create("Invalid", "Email is not entered correctly, double check because this is where funds will be sent!", null);
+                yield break;
+            }
+            if (model.donationTarget <= 0)
+            {
+                SpinnerController.instance.Hide();
+                Popup.Create("Invalid", "A donation target must be set if you entered an email", null);
+                yield break;
+            }
+
+        }
+
+        if (String.IsNullOrEmpty(model.protestPicture))
+        {
+            model.protestPicture = Authentication.userModel.profilePicture;
+        }
+        Debug.Log("Updating Protest: " + model.name);
+        WWWForm form = new WWWForm();
+        form.AddField("protestPicture", model.protestPicture);
+        form.AddField("index", model.index);
+        form.AddField("name", model.name);
+        form.AddField("description", model.description);
+        form.AddField("location", model.location);
+        form.AddField("latitude", model.x.ToString());
+        form.AddField("longitude", model.y.ToString());
+        form.AddField("date", model.date);
+        form.AddField("donationsEmail", model.donationsEmail);
+        form.AddField("donationTarget", model.donationTarget.ToString());
+        form.AddField("sessionToken", token);
+        WWW www = new WWW(URL + "/Protest/Update", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            yield break;
+        }
+
+        Callback((int)jsonObj.GetField("index").n);
+    }
+
+    public static void SendReportProtest(int protestId, string reason, Action Callback)
+    {
+        behaviour.StartCoroutine(SendReportProtestCoroutine(protestId, reason, Callback));
+    }
+
+    public static IEnumerator SendReportProtestCoroutine(int protestId, string reason, Action Callback)
+    {
+        Debug.Log("Sending a report to Protest: " + protestId + ", for: " + reason);
+        WWWForm form = new WWWForm();
+        form.AddField("index", protestId);
+        form.AddField("reason", reason);
+        WWW www = new WWW(URL + "/Protest/Report", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+
+        Debug.Log("Success: " + jsonObj.GetField("success") + " and index is: " + jsonObj.GetField("index"));
+        Callback();
+    }
+
+    public static void GetProtest(int protest, Action<ProtestModel> Callback)
+    {
+        behaviour.StartCoroutine(GetProtestCoroutine(protest, Callback));
+    }
+
+    public static IEnumerator GetProtestCoroutine(int id, Action<ProtestModel> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("index", id);
+        WWW www = new WWW(URL + "/Protest/Find", form);
+
+        yield return www;
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Failed: " + www.error);
+        }
+        else
+        {
+            JSONObject jsonObj = new JSONObject(www.text);
+            if (jsonObj.GetField("error"))
+            {
+                Debug.Log("Error: " + jsonObj.GetField("error").ToString());
+            }
+            else
+            {
+                ProtestModel model = new ProtestModel(jsonObj);
+                Callback(model);
+                Debug.Log("Success: Got protest info: " + model.name);
+            }
+        }
+    }
+
+    public static void GetProtestIcon(int id, Action<string> Callback)
+    {
+        behaviour.StartCoroutine(GetProtestIconCoroutine(id, Callback));
     }
     
-    public static void SendReportProtest(int protestId, string reason)
+    public static IEnumerator GetProtestIconCoroutine(int id, Action<string> Callback)
     {
-
-    }
-
-    public static ProtestModel GetProtest(int protest)
-    {
-        return new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[2], new int[3], new int[5], Authentication.userIndex);
+        yield return new WaitForSeconds(1);
+        Callback("https://pbs.twimg.com/media/Coz8twTWcAADpJQ.png");
     }
 
     public static ProtestModel[] GetProtestList()
     {
         ProtestModel[] models = new ProtestModel[1];
-        models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[20000], new int[3], new int[3], new int[3], Authentication.userIndex);
+        //models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[20000], new int[3], new int[3], new int[3], Authentication.userIndex);
         return models;
     }
 
@@ -573,29 +817,26 @@ public class DataParser : Base
     {
 
     }
-
-    public static ProtestModel CreateProtest(ProtestModel model)
-    {
-        return model;
-    }
-
+    
     public static ProtestModel[] SearchProtests(string search)
     {
         ProtestModel[] models = new ProtestModel[1];
-        models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[0], new int[3], new int[3], Authentication.userIndex);
+        //models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[0], new int[3], new int[3], Authentication.userIndex);
         return models;
     }
 
     public static ProtestModel[] GetProtests(int[] protests)
     {
-        ProtestModel[] models = new ProtestModel[protests.Length];
+        ProtestModel[] models = new ProtestModel[0];
         for (int i = 0; i < protests.Length; i++)
         {
-            models[i] = GetProtest(protests[i]);
+            //models[i] = GetProtest(protests[i]);
         }
         return models;
     }
+    #endregion
 
+    #region Contributions
     public static void AddContribution(int id)
     {
 
@@ -630,7 +871,9 @@ public class DataParser : Base
     {
         return new ContributionsModel(0, "Needs", 5, 2, 0);
     }
+    #endregion
 
+    #region Chats
     public static ChatModel[] GetChats(int[] chats)
     {
         ChatModel[] models = new ChatModel[chats.Length];
@@ -646,7 +889,9 @@ public class DataParser : Base
         ChatModel model = new ChatModel(0, "Hello", 0, "16.4.4.1.30.0");
         return model;
     }
-    
+    #endregion
+
+    #region Likes and going
     public static void LikeProtest(int protest)
     {
 
@@ -666,7 +911,9 @@ public class DataParser : Base
     {
 
     }
+    #endregion
 
+    #region Follow User
     public static void Follow(int index, Action<bool> Callback)
     {
         behaviour.StartCoroutine(FollowCoroutine(index, Callback));
@@ -699,7 +946,9 @@ public class DataParser : Base
         Debug.Log("Success: " + jsonObj.GetField("success"));
         Callback(!jsonObj.GetField("success").ToString().Contains("unfollowed"));
     }
+    #endregion
 
+    #region Notifications and news
     public static void GetNotifications(int[] index, Action<int> Callback)
     {
         behaviour.StartCoroutine(GetNotificationsCoroutine(index, Callback));
@@ -773,4 +1022,41 @@ public class DataParser : Base
         }
         Callback(newsModels.ToArray());
     }
+    #endregion
+
+    #region Locations
+    public static void GetLocation(string location, Action <string, float, float> Callback)
+    {
+        behaviour.StartCoroutine(GetLocationCoroutine(location, Callback));
+    }
+
+    public static IEnumerator GetLocationCoroutine(string location, Action<string, float, float> Callback)
+    {
+        Debug.Log("Finding locations with search:" + location + ".");
+        WWWForm form = new WWWForm();
+        form.AddField("location", location);
+
+        WWW www = new WWW(URL + "/Location/GetCoords", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            Popup.Create("Unknown", "The address or location entered was unable to be found, please try again, perhaps be more specific?", null);
+            yield break;
+        }
+
+        Callback(jsonObj.GetField("address").str, jsonObj.GetField("x").f, jsonObj.GetField("y").f);
+    }
+    #endregion
 }

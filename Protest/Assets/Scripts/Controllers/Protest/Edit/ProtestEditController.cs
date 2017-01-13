@@ -39,8 +39,7 @@ public class ProtestEditController : Controller
     private Controller _returnController;
     public void Show(Controller returnController)
     {
-        model = new ProtestModel(0, "", "", "", "", "", "", "", "", 00f, 0.0f, null, null, new int[0], null, Authentication.userIndex);
-        model = DataParser.CreateProtest(model);
+        model = new ProtestModel(0, "", "", "", "", "", "", "", 00f, 0.0f, null, null, null, null, Authentication.userIndex, 0.0f, 0.0f, true);
         creating = true;
         _returnController = returnController;
         Show();
@@ -48,10 +47,21 @@ public class ProtestEditController : Controller
 
     public void Show(int index, Controller returnController)
     {
-        model = DataParser.GetProtest(index);
+        SpinnerController.instance.Show();
+        _returnController = returnController;
+        DataParser.GetProtest(index, GetProtestCallback);
+    }
+
+    void GetProtestCallback(ProtestModel model)
+    {
+        SpinnerController.instance.Hide();
+        this.model = model;
+        if (!String.IsNullOrEmpty(model.protestPicture))
+        {
+            DataParser.SetSprite(_view.iconImage, model.protestPicture);
+        }
         _view.ChangeUI();
         creating = false;
-        _returnController = returnController;
         Show();
     }
 
@@ -66,27 +76,39 @@ public class ProtestEditController : Controller
 
     public void Complete()
     {
-        if (!creating)
-            DataParser.EditProtest(model, Authentication.auth_token);
-        else
-            DataParser.CreateProtest(model);
+        SpinnerController.instance.Show();
 
+        if (!creating)
+            DataParser.EditProtest(model, Authentication.auth_token, CompleteCallback);
+        else
+            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
+    }
+
+    public void CompleteCallback(int protestIndex)
+    {
+        Debug.Log("Completed: " + protestIndex);
+        SpinnerController.instance.Hide();
         Log.Create(2, "Complete Protest", "ProtestEditController");
-        ProtestController.instance.Show(model.index, ProtestListController.instance);
+        ProtestController.instance.Show(protestIndex, ProtestListController.instance);
         Hide();
     }
 
     public void Delete()
     {
+        if(creating)
+        {
+            Return();
+            return;
+        }
         Popup.Create("Delete", "Are you sure you want to delete this protest? It cannot be retrieved upon deletion.", DeleteCallback, "Popup", "Yes", "No");
     }
 
     void DeleteCallback(int response)
     {
-        if(response == 1)
+        if (response == 1)
         {
             Log.Create(2, "Deleting Protest", "ProtestEditController");
-            if(creating == false)
+            if (creating == false)
                 DataParser.DeleteProtest(model.index);
 
             Return();
@@ -99,21 +121,21 @@ public class ProtestEditController : Controller
         int[] contributers = new int[this.model.contributions.Length - 1];
         for (int i = 0; i < contributers.Length; i++)
         {
-            if(contributers[i] != index)
+            if (contributers[i] != index)
                 contributers[i] = this.model.contributions[i];
         }
         this.model.contributions = contributers;
 
         PopulateList();
     }
-    
+
     public void CreateContribution(ContributionsModel model)
     {
         model.protest = this.model.index;
 
         model = DataParser.CreateContribution(model);
         int[] contributers = new int[this.model.contributions.Length + 1];
-        for(int i = 0; i < contributers.Length - 1; i++)
+        for (int i = 0; i < contributers.Length - 1; i++)
         {
             contributers[i] = this.model.contributions[i];
         }
@@ -148,6 +170,9 @@ public class ProtestEditController : Controller
     public void UpdateIcon()
     {
         DataParser.ChangeIcon(GetIconCallback);
+#if UNITY_EDITOR
+        model.protestPicture = "http://gallery.raccoonfink.com/d/7003-2/alien-head-128x128.png";
+#endif
     }
 
     void GetIconCallback(Texture2D texture)
@@ -171,6 +196,9 @@ public class ProtestEditController : Controller
 #endif
 #if UNITY_IOS
         OnShowDateAndTimePickerIos();
+#endif
+#if UNITY_EDITOR
+        model.date = DataParser.UnparseDate(DateTime.UtcNow);
 #endif
     }
 
@@ -239,4 +267,19 @@ public class ProtestEditController : Controller
         Debug.Log("Canceled");
     }
 #endif
+
+    public void ChangeLocation(string newLocation)
+    {
+        SpinnerController.instance.Show();
+        DataParser.GetLocation(newLocation, ChangeLocationCallback);
+    }
+
+    void ChangeLocationCallback(string address, float lat, float lng)
+    {
+        SpinnerController.instance.Hide();
+        model.x = lat;
+        model.y = lng;
+        model.location = address;
+        _view.locationInput.text = address;
+    }
 }

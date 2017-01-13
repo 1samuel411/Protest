@@ -84,11 +84,11 @@ namespace ProtestBackend.Controllers.Notifications
                 SqlCommand command = new SqlCommand();
                 if (String.IsNullOrEmpty(nameQuery))
                 {
-                    command.CommandText = "SELECT * FROM Notifications WHERE userIndex IN (" + indexQuery + ")";
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ")";
                 }
                 else
                 {
-                    command.CommandText = "SELECT * FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND text LIKE '%' + @nameQuery + '%'";
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND text LIKE '%' + @nameQuery + '%'";
                     command.Parameters.AddWithValue("@nameQuery", nameQuery);
                 }
                 DataTable table = ConnectionManager.CreateQuery(command);

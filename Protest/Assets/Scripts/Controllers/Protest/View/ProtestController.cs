@@ -49,11 +49,19 @@ public class ProtestController : Controller
 
         Show();
 
-        _view.protestModel = DataParser.GetProtest(protestModel);
+        SpinnerController.instance.Show();
+        Log.Create(1, "Opening Protest View", "ProtestController");
+        DataParser.GetProtest(protestModel, GetProtestCallback);
+    }
+
+    void GetProtestCallback(ProtestModel model)
+    {
+        SpinnerController.instance.Hide();
+
+        _view.protestModel = model;
 
         ourProtest = IsOurs();
         _view.selection = ProtestView.SelectionOptions.Info;
-        Log.Create(1, "Opening Protest View", "ProtestController");
         ProtestInfoController.instance.Show();
         ProtestGoingController.instance.PopulateFromServer();
         ProtestContributionsController.instance.PopulateFromServer();

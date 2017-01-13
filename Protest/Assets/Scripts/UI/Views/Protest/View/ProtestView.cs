@@ -148,6 +148,16 @@ public class ProtestView : View
 
         selection = (SelectionOptions)curIndex;
 
+        if (_protestModel.active == false)
+        {
+            goingButton.gameObject.SetActive(false);
+            likeButton.gameObject.SetActive(false);
+        }
+
+        if(ProtestController.instance.ourProtest)
+        {
+            setGoingButton.gameObject.SetActive(false);
+        }
     }
 
     public void SetSelection(int index)

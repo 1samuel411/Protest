@@ -31,7 +31,7 @@ public class ProtestInfoController : Controller
     {
         Log.Create(1, "Opening Report Profile", "ProtestViewController");
         _reportProtest = protest;
-        Popup.Create("Report Protest", "", CallbackReport, "Popup", "Abusive Language", "Inappropriate Content", "Harrasment", "Other");
+        Popup.Create("Report Protest", "", CallbackReport, "Popup", "Abusive Language", "Inappropriate Content", "Spamming", "Other");
     }
 
     void CallbackReport(int response)
@@ -39,26 +39,32 @@ public class ProtestInfoController : Controller
         if (response == 1)
         {
             Log.Create(1, "Abusive Language Report Sent", "ProtestViewController");
-            DataParser.SendReportProtest(_reportProtest.index, "Language");
+            DataParser.SendReportProtest(_reportProtest.index, "Language", CallbackReportProtest);
         }
         else if (response == 2)
         {
             Log.Create(1, "Content Report Sent", "ProtestViewController");
-            DataParser.SendReportProtest(_reportProtest.index, "Content");
+            DataParser.SendReportProtest(_reportProtest.index, "Content", CallbackReportProtest);
         }
         else if (response == 3)
         {
-            Log.Create(1, "Harassment Report Sent", "ProtestViewController");
-            DataParser.SendReportProtest(_reportProtest.index, "Harassment");
+            Log.Create(1, "Spamming Report Sent", "ProtestViewController");
+            DataParser.SendReportProtest(_reportProtest.index, "Spamming", CallbackReportProtest);
         }
         else if (response == 4)
         {
             Log.Create(1, "Other Report Sent", "ProtestViewController");
-            DataParser.SendReportProtest(_reportProtest.index, "Other");
+            DataParser.SendReportProtest(_reportProtest.index, "Other", CallbackReportProtest);
         }
         if (response != 0)
         {
-            Popup.Create("Report Sent", "Your report will be reviewed, Thank you for your submission", null, "Popup", "Okay");
+            SpinnerController.instance.Show();
         }
+    }
+
+    void CallbackReportProtest()
+    {
+        SpinnerController.instance.Hide();
+        Popup.Create("Report Sent", "Your report will be reviewed, Thank you for your submission", null, "Popup", "Okay");
     }
 }

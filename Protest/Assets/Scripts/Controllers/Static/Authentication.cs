@@ -155,6 +155,7 @@ public class Authentication : Base
         {
             FB.LogOut();
         }
+        OneSignal.SendTag("identification", "-1");
         authenticated = false;
         LoadingController.instance._View.loading = false;
         Log.Create(2, "Logging out", "Authentication");

@@ -42,11 +42,16 @@ public class ProtestInfoView : View
         locationText.text = model.location;
         if (model.date != "")
         {
-            System.DateTime newTime = DataParser.ParseDate(model.date);
+            System.DateTime newTime = DataParser.ParseDate(model.date).ToLocalTime();
             dateText.text = newTime.ToShortDateString() + "\n" + newTime.ToShortTimeString();
         }
         else
             dateText.text = "Set Date";
         bodyText.text = model.description;
+
+        if (!model.active)
+        {
+            editButton.gameObject.SetActive(false);
+        }
     }
 }

@@ -19,13 +19,15 @@ namespace ProtestBackend.DAL
 {
     public class NotificationManager
     {
-        private const string ONESIGNALID =  "OneSignalId";
+        private const string ONESIGNALID = "OneSignalId";
         private const string ONESIGNALAPI = "OneSignalAPI";
 
         public enum Type { Follow, Protest };
 
-        public static void SendNotification(int from, int targetId, string body, Type type)
+        public static void SendNotification(int from, int targetId, string body, Type type, string group = "")
         {
+            if (String.IsNullOrEmpty(group))
+                group = DateTime.UtcNow.ToString();
             #region One Signal
             var request = WebRequest.Create("https://onesignal.com/api/v1/notifications") as HttpWebRequest;
 
@@ -38,6 +40,7 @@ namespace ProtestBackend.DAL
             byte[] byteArray = Encoding.UTF8.GetBytes("{"
                                                     + "\"app_id\": \"" + WebConfigurationManager.AppSettings[ONESIGNALID] + "\","
                                                     + "\"contents\": {\"en\": \"" + body + "\"},"
+                                                    + "\"android_group\": \"" + group + "\","
                                                     + "\"filters\": [{\"field\": \"tag\", \"key\": \"identification\", \"relation\": \"=\", \"value\": \"" + targetId.ToString() + "\"}]}");
 
             string responseContent = null;

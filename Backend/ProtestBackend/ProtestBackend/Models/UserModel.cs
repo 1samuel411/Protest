@@ -68,7 +68,7 @@ namespace ProtestBackend.Models
             this.lastLogin = lastLogin;
         }
 
-        public UserModel(DataRow dataTable, bool hide = false)
+        public UserModel(DataRow dataTable, bool hide)
         {
             this.index = int.Parse(dataTable["id"].ToString());
 

@@ -41,7 +41,7 @@ namespace ProtestBackend.Controllers.User
                     }
                     else
                     {
-                        UserModel user = new UserModel(table.Rows[0]);
+                        UserModel user = new UserModel(table.Rows[0], true);
                         user.HideData();
 
                         // Find following
@@ -72,7 +72,7 @@ namespace ProtestBackend.Controllers.User
                 }
                 else
                 {
-                    UserModel user = new UserModel(table.Rows[0]);
+                    UserModel user = new UserModel(table.Rows[0], false);
 
                     // Find following
                     DataTable tableInfo = ConnectionManager.CreateQuery("SELECT followingId FROM Following WHERE userId=" + user.index);
@@ -111,11 +111,11 @@ namespace ProtestBackend.Controllers.User
                 SqlCommand command = new SqlCommand();
                 if (String.IsNullOrEmpty(nameQuery))
                 {
-                    command.CommandText = "SELECT id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ")";
+                    command.CommandText = "SELECT TOP 500 id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ")";
                 }
                 else
                 {
-                    command.CommandText = "SELECT id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ") AND name LIKE '%' + @nameQuery + '%'";
+                    command.CommandText = "SELECT TOP 500 id, profilePicture, name FROM Users WHERE id IN (" + indexQuery + ") AND name LIKE '%' + @nameQuery + '%'";
                     command.Parameters.AddWithValue("@nameQuery", nameQuery);
                 }
                 DataTable table = ConnectionManager.CreateQuery(command);
@@ -132,7 +132,7 @@ namespace ProtestBackend.Controllers.User
             }
             else if(!String.IsNullOrEmpty(nameQuery))
             {
-                SqlCommand command = new SqlCommand("SELECT id, profilePicture, name FROM Users WHERE name LIKE '%' + @nameQuery + '%'");
+                SqlCommand command = new SqlCommand("SELECT TOP 500 id, profilePicture, name FROM Users WHERE name LIKE '%' + @nameQuery + '%'");
                 command.Parameters.AddWithValue("@nameQuery", nameQuery);
                 DataTable table = ConnectionManager.CreateQuery(command);
                 if (table.Rows.Count <= 0)
@@ -141,7 +141,7 @@ namespace ProtestBackend.Controllers.User
                 }
                 else
                 {
-                    UserModel[] users = table.Select().Select(s => new UserModel(s, true)).Take(256).ToArray();
+                    UserModel[] users = table.Select().Select(s => new UserModel(s, true)).ToArray();
                     string result = JsonConvert.SerializeObject(users);
                     return Content(result);
                 }
@@ -519,7 +519,7 @@ namespace ProtestBackend.Controllers.User
                     if(notifyUser)
                     {
                         // notify user we unfollowed
-                        NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " unfollowed you.", NotificationManager.Type.Follow);
+                        NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " unfollowed you.", NotificationManager.Type.Follow, "follow");
                         NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " unfollowed " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                     }
                     return Content(Success.Create("Successfully unfollowed user"));
@@ -539,7 +539,7 @@ namespace ProtestBackend.Controllers.User
                 if(notifyUser)
                 {
                     //notify user we followed
-                    NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " followed you.", NotificationManager.Type.Follow);
+                    NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " followed you.", NotificationManager.Type.Follow, "follow");
                     NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " is following " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                 }
                 return Content(Success.Create("Successfully followed user"));

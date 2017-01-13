@@ -104,6 +104,9 @@ public class ProfileViewController : Controller
 
         for (int i = 0; i < user.protestsAttended.Length; i++)
         {
+            if (i > 16)
+                return;
+
             if (user.protestsAttended.Length <= 0)
                 return;
 
@@ -114,6 +117,9 @@ public class ProfileViewController : Controller
 
         for (int i = 0; i < user.protestsCreated.Length; i++)
         {
+            if (i > 16)
+                return;
+
             if (user.protestsCreated.Length <= 0)
                 return;
 

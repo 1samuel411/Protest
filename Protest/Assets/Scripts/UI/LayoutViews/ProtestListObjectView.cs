@@ -25,10 +25,23 @@ public class ProtestListObjectView : View
         protestToDisplay = newModel;
 
         titleText.text = protestToDisplay.name;
-        locationText.text = protestToDisplay.location;
+        string locationTextNew = protestToDisplay.location;
+        string[] splitLocation = locationTextNew.Split(',');
+        if(splitLocation.Length >= 2)
+        {
+            locationTextNew = splitLocation[1].Trim() + ", " + splitLocation[2];
+        }
+
+        if (locationTextNew.Length >= 22)
+            locationTextNew = locationTextNew.Substring(0, 22) + "...";
+
+        locationText.text = locationTextNew;
         _time = DataParser.ParseDate(newModel.date);
+        _time = _time.ToLocalTime();
         dateText.text = _time.ToString("MM/dd/yy  H:mm");
-        goingText.text = protestToDisplay.going.Length.ToString();
+
+        goingText.text = DataParser.GetCount(protestToDisplay.going.Length);
+
 
 
         likesText.text = DataParser.GetCount(newModel.likes.Length);

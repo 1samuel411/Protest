@@ -126,7 +126,7 @@ namespace ProtestBackend.DAL
             }
             catch (WebException ex)
             {
-                return "";
+                return ex.ToString();
             }
         }
 
