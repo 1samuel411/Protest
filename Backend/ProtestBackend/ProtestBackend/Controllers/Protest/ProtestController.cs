@@ -148,6 +148,12 @@ namespace ProtestBackend.Controllers.Protest
             }
             NotificationManager.CreateNotification(userIndex, indexCreated, userProfilePicture, userName + " created a new Protest, " + name, NotificationManager.Type.Protest);
 
+            SqlCommand commandCreate = new SqlCommand("INSERT INTO Going (userId, protestId, time) VALUES ( @user, @protest,@time)");
+            command.Parameters.AddWithValue("@user", userIndex);
+            command.Parameters.AddWithValue("@protest", indexCreated);
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
+            ConnectionManager.CreateCommand(command);
+
             return Content(SuccessCreation.Create("Successfully created protest", indexCreated));
         }
 
@@ -164,7 +170,7 @@ namespace ProtestBackend.Controllers.Protest
             {
                 if (int.TryParse(indexQuery, out index))
                 {
-                    DataTable table = ConnectionManager.CreateQuery("SELECT id, protestPicture, name, description, location, date, time, donationsEmail, donationCurrent, donationTarget, userCreated, time, latitude, longitude, active FROM Protests WHERE id=" + index + " AND deleted='false'");
+                    DataTable table = ConnectionManager.CreateQuery("SELECT id, protestPicture, name, description, location, date, time, donationsEmail, donationCurrent, donationTarget, userCreated, time, latitude, longitude, active FROM Protests WHERE deleted='False' AND id=" + index + "");
 
                     if (table.Rows.Count <= 0)
                     {
@@ -179,12 +185,15 @@ namespace ProtestBackend.Controllers.Protest
                             if (Parser.ParseDate(protest.date) <= (DateTime.UtcNow.AddHours(-2)))
                             {
                                 protest.active = false;
-                                int response = ConnectionManager.CreateCommand("UPDATE Protests SET active=False WHERE id=" + protest.index);
+                                int response = ConnectionManager.CreateCommand("UPDATE Protests SET active='False' WHERE id=" + protest.index);
                             }
                         }
 
-                        protest.going = new int[0];
-                        protest.likes = new int[0];
+                        // Find followers
+                        table = ConnectionManager.CreateQuery("SELECT userId FROM Going WHERE protestId=" + index);
+                        protest.going = Parser.ParseColumnsToIntArray(table.Rows, 0);
+                        table = ConnectionManager.CreateQuery("SELECT userId FROM Likes WHERE protestId=" + index);
+                        protest.likes = Parser.ParseColumnsToIntArray(table.Rows, 0);
                         protest.contributions = new int[0];
                         protest.chats = new int[0];
 
@@ -415,20 +424,20 @@ namespace ProtestBackend.Controllers.Protest
                 SqlCommand command = new SqlCommand();
                 if (String.IsNullOrEmpty(nameQuery))
                 {
-                    command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date FROM Protests WHERE active='True' AND deleted='False' AND id IN (" + indexQuery + ")");
+                    command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude, userCreated FROM Protests WHERE deleted='False' AND id IN (" + indexQuery + ") ORDER BY id DESC");
                     command.Parameters.AddWithValue("@search", nameQuery);
                     table = ConnectionManager.CreateQuery(command);
                 }
                 else
                 {
-                    command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date FROM Protests WHERE active='True' AND deleted='False' AND id IN (" + indexQuery + ") AND name LIKE '%' + @search + '%' OR location LIKE '%' + @search + '%'");
+                    command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude, userCreated FROM Protests WHERE deleted='False' AND id IN (" + indexQuery + ") AND name LIKE '%' + @search + '%' OR location LIKE '%' + @search + '%' ORDER BY id DESC");
                     command.Parameters.AddWithValue("@search", nameQuery);
                     table = ConnectionManager.CreateQuery(command);
                 }
             }
             else if (!String.IsNullOrEmpty(nameQuery))
             {
-                SqlCommand command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date FROM Protests WHERE active='True' AND deleted='False' AND name LIKE '%' + @search + '%' OR location LIKE '%' + @search + '%'");
+                SqlCommand command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude, userCreated FROM Protests WHERE deleted='False' AND name LIKE '%' + @search + '%' OR location LIKE '%' + @search + '%' ORDER BY id DESC");
                 command.Parameters.AddWithValue("@search", nameQuery);
                 table = ConnectionManager.CreateQuery(command);
             }
@@ -440,7 +449,7 @@ namespace ProtestBackend.Controllers.Protest
                 if (!float.TryParse(longitude, out lng))
                     return Content(Error.Create("Latitude or longitude could not be parsed"));
 
-                SqlCommand command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude FROM Protests WHERE active='True' AND deleted='False' ORDER BY ((latitude-@latitude)*(latitude-@latitude)) + ((longitude-@longitude)*(longitude-@longitude)) ASC");
+                SqlCommand command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude, userCreated FROM Protests WHERE active='True' AND deleted='False' ORDER BY ((latitude-@latitude)*(latitude-@latitude)) + ((longitude-@longitude)*(longitude-@longitude)) ASC, id DESC");
                 command.Parameters.AddWithValue("@latitude", latitude);
                 command.Parameters.AddWithValue("@longitude", longitude);
                 table = ConnectionManager.CreateQuery(command);
@@ -452,7 +461,7 @@ namespace ProtestBackend.Controllers.Protest
 
             if(table.Rows.Count <= 0)
             {
-                return Content(Success.Create("Empty"));
+                return Content(Error.Create("Invalid request"));
             }
 
             string result = "";
@@ -466,6 +475,260 @@ namespace ProtestBackend.Controllers.Protest
             result = JsonConvert.SerializeObject(protests);
 
             return Content(result);
+        }
+
+        // POST: Like
+        // GET: Like
+        public ActionResult Like()
+        {
+            #region Get Data
+            string sessionToken = Request.QueryString["sessionToken"];
+            string index = Request.QueryString["index"];
+            if (String.IsNullOrEmpty(sessionToken))
+                sessionToken = Request.Form["sessionToken"];
+            if (String.IsNullOrEmpty(index))
+                index = Request.Form["index"];
+
+            int indexint = -1;
+            if (!int.TryParse(index, out indexint))
+            {
+                return Content(Error.Create("Index could not be parsed"));
+            }
+            #endregion
+
+            SqlCommand command = new SqlCommand("SELECT id, name, profilePicture FROM Users WHERE sessionToken=@sessionToken");
+            command.Parameters.AddWithValue("@sessionToken", sessionToken);
+
+            // Check that the user we are going to modify exists
+            DataTable user = ConnectionManager.CreateQuery(command);
+            if (user.Rows.Count <= 0)
+            {
+                return Content(Error.Create("SessionToken does not exist"));
+            }
+
+            string userName = user.Rows[0].Field<string>("name");
+            int id = user.Rows[0].Field<int>("id");
+            string profilePicture = user.Rows[0].Field<string>("profilePicture");
+
+            command.Parameters.Clear();
+            command = new SqlCommand("SELECT userCreated, name FROM Protests WHERE id=" + indexint);
+            DataTable tableIndex = ConnectionManager.CreateQuery(command);
+            if (tableIndex.Rows.Count <= 0)
+            {
+                return Content(Error.Create("Index does not exist"));
+            }
+
+            int userProtestCreated = tableIndex.Rows[0].Field<int>("userCreated");
+            string protestName = tableIndex.Rows[0].Field<string>("name");
+
+            // Check that user wants our notification
+            command = new SqlCommand("SELECT notifyLikesComments, name FROM Users WHERE id=" + userProtestCreated);
+            tableIndex = ConnectionManager.CreateQuery(command);
+
+            if (tableIndex.Rows.Count <= 0)
+            {
+                return Content(Error.Create("Index does not exist"));
+            }
+
+            bool notifyUser = tableIndex.Rows[0].Field<bool>("notifyLikesComments");
+
+            // Check if Like already exists
+            command = new SqlCommand("SELECT id FROM Likes WHERE userId=" + id + " AND protestId=" + indexint);
+            DataTable check = ConnectionManager.CreateQuery(command);
+
+            // Delete if so
+            if (check.Rows.Count >= 1)
+            {
+                command = new SqlCommand("DELETE FROM Likes WHERE id=" + check.Rows[0].Field<int>("id"));
+                int responseDelete = ConnectionManager.CreateCommand(command);
+                if (responseDelete >= 1)
+                {
+                    if (notifyUser)
+                    {
+                        // notify user we unfollowed
+                        NotificationManager.SendNotification(id, userProtestCreated, userName + " unliked your Protest.", NotificationManager.Type.Protest, "likes");
+                    }
+
+                    NotificationManager.CreateNotification(id, indexint, profilePicture, userName + " unliked " + protestName + "", NotificationManager.Type.Protest);
+                    return Content(Success.Create("Successfully unliked protest"));
+                }
+                else
+                {
+                    return Content(Error.Create("Internal error"));
+                }
+            }
+
+            // Create if not
+            command = new SqlCommand("INSERT INTO Likes (userId, protestId, time) VALUES (" + id + "," + indexint + "," + "@time" + ")");
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
+            int response = ConnectionManager.CreateCommand(command);
+            if (response >= 1)
+            {
+                if (notifyUser)
+                {
+                    // notify user we unfollowed
+                    NotificationManager.SendNotification(id, userProtestCreated, userName + " liked your Protest.", NotificationManager.Type.Protest, "likes");
+                }
+
+                NotificationManager.CreateNotification(id, indexint, profilePicture, userName + " liked " + protestName + "", NotificationManager.Type.Protest);
+                return Content(Success.Create("Successfully liked protest"));
+            }
+            else
+                return Content(Error.Create("Internal error"));
+        }
+
+        // POST: Going
+        // GET: Going
+        public ActionResult Going()
+        {
+            #region Get Data
+            string sessionToken = Request.QueryString["sessionToken"];
+            string index = Request.QueryString["index"];
+            if (String.IsNullOrEmpty(sessionToken))
+                sessionToken = Request.Form["sessionToken"];
+            if (String.IsNullOrEmpty(index))
+                index = Request.Form["index"];
+
+            int indexint = -1;
+            if (!int.TryParse(index, out indexint))
+            {
+                return Content(Error.Create("Index could not be parsed"));
+            }
+            #endregion
+
+            SqlCommand command = new SqlCommand("SELECT id, name, profilePicture FROM Users WHERE sessionToken=@sessionToken");
+            command.Parameters.AddWithValue("@sessionToken", sessionToken);
+
+            // Check that the user we are going to modify exists
+            DataTable user = ConnectionManager.CreateQuery(command);
+            if (user.Rows.Count <= 0)
+            {
+                return Content(Error.Create("SessionToken does not exist"));
+            }
+
+            string userName = user.Rows[0].Field<string>("name");
+            int id = user.Rows[0].Field<int>("id");
+            string profilePicture = user.Rows[0].Field<string>("profilePicture");
+
+            command.Parameters.Clear();
+            command = new SqlCommand("SELECT userCreated, name FROM Protests WHERE id=" + indexint);
+            DataTable tableIndex = ConnectionManager.CreateQuery(command);
+            if (tableIndex.Rows.Count <= 0)
+            {
+                return Content(Error.Create("Index does not exist"));
+            }
+
+            int userProtestCreated = tableIndex.Rows[0].Field<int>("userCreated");
+            string protestName = tableIndex.Rows[0].Field<string>("name");
+
+            // Check that user wants our notification
+            command = new SqlCommand("SELECT notifyLikesComments, name FROM Users WHERE id=" + userProtestCreated);
+            tableIndex = ConnectionManager.CreateQuery(command);
+
+            if (tableIndex.Rows.Count <= 0)
+            {
+                return Content(Error.Create("Index does not exist"));
+            }
+
+            bool notifyUser = tableIndex.Rows[0].Field<bool>("notifyLikesComments");
+
+            // Check if Like already exists
+            command = new SqlCommand("SELECT id FROM Going WHERE userId=" + id + " AND protestId=" + indexint);
+            DataTable check = ConnectionManager.CreateQuery(command);
+
+            // Delete if so
+            if (check.Rows.Count >= 1)
+            {
+                command = new SqlCommand("DELETE FROM Going WHERE id=" + check.Rows[0].Field<int>("id"));
+                int responseDelete = ConnectionManager.CreateCommand(command);
+                if (responseDelete >= 1)
+                {
+                    if (notifyUser)
+                    {
+                        // notify user we unwent
+                        NotificationManager.SendNotification(id, userProtestCreated, userName + " is not going to your Protest.", NotificationManager.Type.Protest, "going");
+                    }
+
+                    NotificationManager.CreateNotification(id, indexint, profilePicture, userName + " is not going to the Protest, " + protestName + "", NotificationManager.Type.Protest);
+                    return Content(Success.Create("Successfully unwent to the protest"));
+                }
+                else
+                {
+                    return Content(Error.Create("Internal error"));
+                }
+            }
+
+            // Create if not
+            command = new SqlCommand("INSERT INTO Going (userId, protestId, time) VALUES (" + id + "," + indexint + "," + "@time" + ")");
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
+            int response = ConnectionManager.CreateCommand(command);
+            if (response >= 1)
+            {
+                if (notifyUser)
+                {
+                    // notify user we are going
+                    NotificationManager.SendNotification(id, userProtestCreated, userName + " is going to your Protest.", NotificationManager.Type.Protest, "going");
+                }
+
+                NotificationManager.CreateNotification(id, indexint, profilePicture, userName + " is going to " + protestName + "", NotificationManager.Type.Protest);
+                return Content(Success.Create("Successfully going to the protest"));
+            }
+            else
+                return Content(Error.Create("Internal error"));
+        }
+
+        // POST: Delete
+        // GET: Delete
+        public ActionResult Delete()
+        {
+            #region Get Data
+            string sessionToken = Request.QueryString["sessionToken"];
+            string index = Request.QueryString["index"];
+            if (String.IsNullOrEmpty(sessionToken))
+                sessionToken = Request.Form["sessionToken"];
+            if (String.IsNullOrEmpty(index))
+                index = Request.Form["index"];
+
+            int indexint = -1;
+            if (!int.TryParse(index, out indexint))
+            {
+                return Content(Error.Create("Index could not be parsed"));
+            }
+            #endregion
+
+            SqlCommand command = new SqlCommand("SELECT id, name, profilePicture FROM Users WHERE sessionToken=@sessionToken");
+            command.Parameters.AddWithValue("@sessionToken", sessionToken);
+
+            // Check that the user we are going to modify exists
+            DataTable user = ConnectionManager.CreateQuery(command);
+            if (user.Rows.Count <= 0)
+            {
+                return Content(Error.Create("SessionToken does not exist"));
+            }
+
+            command.Parameters.Clear();
+            command = new SqlCommand("SELECT userCreated FROM Protests WHERE id=" + indexint);
+            DataTable tableIndex = ConnectionManager.CreateQuery(command);
+
+            if (tableIndex.Rows[0].Field<int>("userCreated") != user.Rows[0].Field<int>("id"))
+                return Content(Error.Create("Not validated"));
+
+            if (tableIndex.Rows.Count <= 0)
+            {
+                return Content(Error.Create("Index does not exist"));
+            }
+
+            // Delete
+            command = new SqlCommand("UPDATE Protests SET deleted='True' WHERE id=" + indexint);
+            int responseDelete = ConnectionManager.CreateCommand(command);
+            if (responseDelete >= 1)
+            {
+                return Content(Success.Create("Successfully deleted to the protest"));
+            }
+            else
+            {
+                return Content(Error.Create("Internal error"));
+            }
         }
 
     }

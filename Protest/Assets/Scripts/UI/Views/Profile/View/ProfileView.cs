@@ -93,8 +93,6 @@ public class ProfileView : View
 
         twitterButton.onClick.RemoveAllListeners();
         twitterButton.onClick.AddListener(() => { ProfileViewController.instance.OpenTwitter(userModel.twitterUser); });
-
-        ProfileViewController.instance.PopulateProtests(userModel);
     }
     
     public void Return()

@@ -67,8 +67,8 @@ public class ProtestView : View
 
     public Color selectedTopBarColor;
 
-    private bool going;
-    private bool liked;
+    public bool going;
+    public bool liked;
 
     void Awake()
     {
@@ -82,6 +82,9 @@ public class ProtestView : View
 
     void UpdateUI()
     {
+        if (protestModel == null)
+            return;
+
         contributionsButton.image.color = defaultColor;
         goingButton.image.color = defaultColor;
         infoButton.image.color = defaultColor;
@@ -150,8 +153,8 @@ public class ProtestView : View
 
         if (_protestModel.active == false)
         {
-            goingButton.gameObject.SetActive(false);
-            likeButton.gameObject.SetActive(false);
+            goingButton.enabled = false;
+            likeButton.enabled = false;
         }
 
         if(ProtestController.instance.ourProtest)
@@ -165,24 +168,15 @@ public class ProtestView : View
         selection = (SelectionOptions)index;
     }
 
-    void ChangeUI()
+
+    public int likesCountInt = 0;
+    public void ChangeUI()
     {
         if (protestModel == null)
             return;
 
         title.text = (protestModel.name.Length > 9) ? protestModel.name.Substring(0, 12) + "..." : protestModel.name;
-        string likesCountString = "";
-        if (protestModel.likes.Length >= 1000)
-        {
-            likesCountString = (protestModel.likes.Length / 1000.0f).ToString() + "k";
-        }
-        else
-            likesCountString = protestModel.likes.Length.ToString();
-
-        if (protestModel.likes.Length >= 1000000)
-        {
-            likesCountString = (protestModel.likes.Length / 1000000.0f).ToString() + "m";
-        }
+        string likesCountString = DataParser.GetCount(protestModel.likes.Length + likesCountInt);
         
         likesCount.text = likesCountString;
     }

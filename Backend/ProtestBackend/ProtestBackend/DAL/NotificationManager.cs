@@ -26,6 +26,22 @@ namespace ProtestBackend.DAL
 
         public static void SendNotification(int from, int targetId, string body, Type type, string group = "")
         {
+            if (type == Type.Follow || type == Type.Protest)
+            {
+                DataTable table = ConnectionManager.CreateQuery("SELECT notifyFollowing FROM Users WHERE id=" + targetId);
+                if (table.Rows.Count <= 0)
+                {
+                    return;
+                }
+                else
+                {
+                    if (!table.Rows[0].Field<bool>("notifyFollowing"))
+                    {
+                        return;
+                    }
+                }
+            }
+
             if (String.IsNullOrEmpty(group))
                 group = DateTime.UtcNow.ToString();
             #region One Signal

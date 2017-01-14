@@ -14,35 +14,20 @@ public class ContributionsListsObjectView : View
     public Button AddButton;
     public Button RemoveButton;
 
-    public void ChangeInfo(int id, Action<int> addContribution, Action<int> removeContribution)
+    public void ChangeInfo(int id, Action<int> Interact, bool delete)
     {
-        bool ours = ProtestController.instance.ourProtest;
         ContributionsModel model = DataParser.FindContribution(id);
 
         nameText.text = model.name;
 
-        AddButton.gameObject.SetActive(!ours);
-        RemoveButton.gameObject.SetActive(!ours);
+        AddButton.gameObject.SetActive(!delete);
+        RemoveButton.gameObject.SetActive(delete);
 
         AddButton.onClick.RemoveAllListeners();
-        AddButton.onClick.AddListener(() => { addContribution(id); });
+        AddButton.onClick.AddListener(() => { Interact(id); });
 
         RemoveButton.onClick.RemoveAllListeners();
-        RemoveButton.onClick.AddListener(() => { removeContribution(id); });
-
-        progress.text = model.currentAmount + "/" + model.amountNeeded;
-    }
-
-    public void ChangeInfo(int id, Action<int> deleteContribution)
-    {
-        ContributionsModel model = DataParser.FindContribution(id);
-
-        nameText.text = model.name;
-
-        AddButton.gameObject.SetActive(false);
-
-        RemoveButton.onClick.RemoveAllListeners();
-        RemoveButton.onClick.AddListener(() => { deleteContribution(id); });
+        RemoveButton.onClick.AddListener(() => { Interact(id); });
 
         progress.text = model.currentAmount + "/" + model.amountNeeded;
     }

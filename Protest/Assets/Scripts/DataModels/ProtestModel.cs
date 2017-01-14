@@ -79,6 +79,10 @@ public class ProtestModel : Model
 
     public ProtestModel(JSONObject jsonObj)
     {
+        if(jsonObj.HasField("index") == false)
+        {
+            return;
+        }
         index = int.Parse(jsonObj.GetField("index").ToString());
         protestPicture = jsonObj.GetField("protestPicture").str;
         name = jsonObj.GetField("name").str;

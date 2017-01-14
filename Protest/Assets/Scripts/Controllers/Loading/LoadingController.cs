@@ -137,6 +137,7 @@ public class LoadingController : Controller
         else
         {
             // Access granted and location value could be retrieved
+            Debug.Log("Our location is: " + Input.location.lastData.latitude + ", " + Input.location.lastData.longitude);
             ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, LoadCallback);
         }
 

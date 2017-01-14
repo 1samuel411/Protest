@@ -107,7 +107,13 @@ public class ProtestController : Controller
 
     public void Going()
     {
-        if (ProtestController.instance.Contains(Authentication.userIndex, _view.protestModel.going))
+        SpinnerController.instance.Show();
+        DataParser.GoingProtest(_view.protestModel.index, GoingCallback);
+    }
+
+    public void GoingCallback(bool going)
+    {
+        if(going)
         {
 #if UNITY_ANDROID
             var beginTime = DataParser.ParseDate(_view.protestModel.date);
@@ -123,20 +129,29 @@ public class ProtestController : Controller
 #if UNITY_IOS
 
 #endif
-            DataParser.GoingProtest(_view.protestModel.index);
+        }
+        SpinnerController.instance.Hide();
+        _view.going = going;
+
+        if(going)
+        {
+            ProtestGoingController.instance.AddUser(Authentication.userModel);
         }
         else
-            DataParser.NotGoingProtest(_view.protestModel.index);
-
-
+            ProtestGoingController.instance.RemoveUser(Authentication.userIndex);
     }
 
     public void Like()
     {
-        if (ProtestController.instance.Contains(Authentication.userIndex, _view.protestModel.likes))
-            DataParser.LikeProtest(_view.protestModel.index);
-        else
-            DataParser.UnLikeProtest(_view.protestModel.index);
+        SpinnerController.instance.Show();
+        DataParser.LikeProtest(_view.protestModel.index, LikeCallback);
+    }
+
+    void LikeCallback(bool liked)
+    {
+        _view.likesCountInt = (liked) ? 1 : 0;
+        SpinnerController.instance.Hide();
+        _view.liked = liked;
     }
 
     public bool Contains(int a, int[] list)

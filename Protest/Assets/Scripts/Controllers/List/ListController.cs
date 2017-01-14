@@ -37,12 +37,15 @@ public class ListController : Controller
         }
         set
         {
+            _listIndex = 0;
             _searchString = value;
             if (model != null)
                 if (showType == ShowType.news)
                 {
                     SpinnerController.instance.Show();
-                    DataParser.GetNews((model.following), searchString, GetNewsCallback);
+                    int[] us = new int[1];
+                    us[0] = Authentication.userIndex;
+                    DataParser.GetNews(model.following.Union(us).ToArray(), model.protestsCreated, searchString, GetNewsCallback);
                 }
                 else
                     PopulateList(); 
@@ -77,6 +80,7 @@ public class ListController : Controller
     private Controller previousController;
     public void Show(ShowType showType, UserModel model, Controller previousController)
     {
+        _listIndex = 1;
         this.previousController = previousController;
         _view.searchInput.text = "";
         searchString = "";
@@ -89,7 +93,10 @@ public class ListController : Controller
         {
             if (model.following.Length <= 0)
                 Return();
-            DataParser.GetNews((model.following), searchString, GetNewsCallback);
+
+            int[] us = new int[1];
+            us[0] = Authentication.userIndex;
+            DataParser.GetNews(model.following.Union(us).ToArray(), model.protestsCreated.Union(model.protestsAttended).ToArray(), searchString, GetNewsCallback);
         }
         else
         {
@@ -102,7 +109,6 @@ public class ListController : Controller
 
     void GetNewsCallback(NewsModel[] models)
     {
-        _listIndex = 1;
         _beginIndex = 0;
         _endIndex = 0;
 
@@ -133,6 +139,8 @@ public class ListController : Controller
         previousController.Show();
         Debug.Log("Returning to: " + previousController.name);
         Hide();
+        SpinnerController.instance.Show();
+        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
     }
 
     public void PageBack()
@@ -161,11 +169,13 @@ public class ListController : Controller
 
         // Clear
         PoolManager.instance.SetPath(1);
+        PoolManager.instance.Clear();
+        PoolManager.instance.SetPath(0);
+        PoolManager.instance.Clear();
         if (showType == ShowType.attended || showType == ShowType.created)
             PoolManager.instance.SetPath(0);
         if (showType == ShowType.news)
             PoolManager.instance.SetPath(1);
-        PoolManager.instance.Clear();
 
         protestsData = new ProtestModel[0];
         usersData = new UserModel[0];
@@ -221,11 +231,10 @@ public class ListController : Controller
         PoolManager.instance.SetPath(1);
         if (showType == ShowType.attended || showType == ShowType.created)
             PoolManager.instance.SetPath(0);
-        if(showType == ShowType.news)
+        if (showType == ShowType.news)
             PoolManager.instance.SetPath(1);
-
         PoolManager.instance.Clear();
-     
+
         Log.Create(1, "Populating List", "ListController");
         
         
@@ -244,15 +253,38 @@ public class ListController : Controller
         _beginIndex -= _pageSize;
 
         if (showType == ShowType.attended)
-            protestsData = DataParser.GetProtests(model.protestsAttended);
+            DataParser.GetProtests(model.protestsAttended, 0, 0, searchString, GetProtestsListCallback);
         else if (showType == ShowType.created)
-            protestsData = DataParser.GetProtests(model.protestsAttended);
+            DataParser.GetProtests(model.protestsCreated, 0, 0, searchString, GetProtestsListCallback);
         else if (showType == ShowType.followers)
             DataParser.GetUsers(model.followers.Skip(_beginIndex).Take(_endIndex).ToArray(), searchString, GetUsersCallback);
         else if (showType == ShowType.following)
             DataParser.GetUsers(model.following.Skip(_beginIndex).Take(_endIndex).ToArray(), searchString, GetUsersCallback);
         else if (showType == ShowType.news)
             DataParser.GetAtlas(newsModels.Skip(_beginIndex).Take(_endIndex).Select(x => x.picture).ToArray(), PopulateWithAtlas);
+    }
+
+    void GetProtestsListCallback(ProtestModel[] models)
+    {
+        protestsData = models;
+
+        if (protestsData.Length <= 0)
+        {
+            SpinnerController.instance.Hide();
+            return;
+        }
+
+        _pageLength = (protestsData.Length / _pageSize) + 1;
+
+        if (_pageLength <= 0 || listIndex >= _pageLength)
+            _endIndex = protestsData.Length;
+        else
+            _endIndex = _pageSize * listIndex;
+
+        _beginIndex = listIndex * _pageSize;
+        _beginIndex -= _pageSize;
+
+        DataParser.GetAtlas(protestsData.Skip(_beginIndex).Take(_endIndex).Select(x => x.protestPicture).ToArray(), PopulateWithAtlas);
     }
 
     private void PopulateWithAtlas(Texture2D _atlas)

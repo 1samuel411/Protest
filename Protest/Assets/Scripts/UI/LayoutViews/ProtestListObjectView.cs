@@ -11,6 +11,7 @@ public class ProtestListObjectView : View
 
     public Text titleText;
     public Text locationText;
+    public Text distanceText;
     public Text dateText;
     public Text goingText;
     public Text likesText;
@@ -26,19 +27,14 @@ public class ProtestListObjectView : View
 
         titleText.text = protestToDisplay.name;
         string locationTextNew = protestToDisplay.location;
-        string[] splitLocation = locationTextNew.Split(',');
-        if(splitLocation.Length >= 2)
-        {
-            locationTextNew = splitLocation[1].Trim() + ", " + splitLocation[2];
-        }
 
-        if (locationTextNew.Length >= 22)
-            locationTextNew = locationTextNew.Substring(0, 22) + "...";
+        if (locationTextNew.Length >= 40)
+            locationTextNew = locationTextNew.Substring(0, 37) + "...";
 
         locationText.text = locationTextNew;
         _time = DataParser.ParseDate(newModel.date);
         _time = _time.ToLocalTime();
-        dateText.text = _time.ToString("MM/dd/yy  H:mm");
+        dateText.text = _time.DayOfWeek + ", " + _time.ToShortDateString() + "\n" + _time.ToShortTimeString();
 
         goingText.text = DataParser.GetCount(protestToDisplay.going.Length);
 
@@ -51,5 +47,7 @@ public class ProtestListObjectView : View
 
         selectButton.onClick.RemoveAllListeners();
         selectButton.onClick.AddListener(() => { callback(protestToDisplay.index); });
+
+        distanceText.text = Math.Round(DataParser.CalculateDistance(Input.location.lastData.latitude, Input.location.lastData.longitude, newModel.x, newModel.y), 1).ToString() + " miles";
     }
 }

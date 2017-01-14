@@ -35,7 +35,7 @@ public class ProtestListView : View
     {
         MenuBarController.instance.UpdateProfile();
         ProtestListController.instance.PopulateFromServer();
-        InvokeRepeating("LoadNotifications", 10, 10);
+        InvokeRepeating("LoadNotifications", 10, 30);
     }
 
     void LoadNotifications()
@@ -56,7 +56,7 @@ public class ProtestListView : View
 
 
         if (listHolder.anchoredPosition.y <= 0 && SwipeDetection.instance.swipeDirection == SwipeDetection.SwipeDirections.down)
-            ProtestListController.instance.PopulateList();
+            ProtestListController.instance.PopulateFromServer();
     }
 
     private void UpdateUI()

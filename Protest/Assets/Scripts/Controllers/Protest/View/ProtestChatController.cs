@@ -23,7 +23,7 @@ public class ProtestChatController : Controller
     {
         _view.ChangeUI();
         chatData = null;
-        oldChatData = new ChatModel[0];
+        oldChatData = null;
 
         RefreshData();
 
@@ -35,7 +35,7 @@ public class ProtestChatController : Controller
         if (!ProtestChatController.instance.view.gameObject.activeInHierarchy)
             return;
 
-        chatData = DataParser.GetChats(ProtestController.instance.GetModel().chats);
+        //chatData = DataParser.GetChats(ProtestController.instance.GetModel().chats);
         if (oldChatData.Length != chatData.Length)
         {
             oldChatData = chatData;

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class SearchController : Controller
 {
@@ -55,7 +56,9 @@ public class SearchController : Controller
 
     public void Return()
     {
-        ProtestListController.instance.Show();
+        SpinnerController.instance.Show();
+        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
+        Hide();
     }
 
     private void ReturnCallback(int response)
@@ -83,16 +86,29 @@ public class SearchController : Controller
 
     public void PopulateFromServer()
     {
+        // Clear
+        PoolManager.instance.SetPath(0);
+        PoolManager.instance.Clear();
+        PoolManager.instance.SetPath(1);
+        PoolManager.instance.Clear();
+        if (_view.selection == SearchView.SearchSelection.Protests)
+            PoolManager.instance.SetPath(0);
+
         protestsData = new ProtestModel[0];
         usersData = new UserModel[0];
         listIndex = 1;
 
         Log.Create(1, "Populating from server", "SearchController");
 
+        if(String.IsNullOrEmpty(searchString))
+        {
+            return;
+        }
+
         SpinnerController.instance.Show();
 
         if (_view.selection == SearchView.SearchSelection.Protests)
-            protestsData = DataParser.SearchProtests(searchString);
+            DataParser.GetProtests(null, 0, 0, searchString, SearchProtestCallback);
         if(_view.selection == SearchView.SearchSelection.Users)
             DataParser.SearchUsers(searchString, SearchUsersCallback);
     }
@@ -105,7 +121,26 @@ public class SearchController : Controller
             return;
 
         usersData = users;
-        _pageLength = ((_view.selection == SearchView.SearchSelection.Protests ? protestsData.Length : usersData.Length) / _pageSize) + 1;
+        _pageLength = (usersData.Length / _pageSize) + 1;
+        _beginIndex = 0;
+        _endIndex = 0;
+        PopulateList();
+    }
+
+    public void SearchProtestCallback(ProtestModel[] models)
+    {
+        SpinnerController.instance.Hide();
+
+        if (models == null)
+            return;
+
+        if(models.Length <= 0)
+        {
+            return;
+        }
+
+        protestsData = models;
+        _pageLength = (protestsData.Length / _pageSize) + 1;
         _beginIndex = 0;
         _endIndex = 0;
         PopulateList();
@@ -152,10 +187,12 @@ public class SearchController : Controller
     {
         SpinnerController.instance.Hide();
         // Clear
+        PoolManager.instance.SetPath(0);
+        PoolManager.instance.Clear();
         PoolManager.instance.SetPath(1);
+        PoolManager.instance.Clear();
         if (_view.selection == SearchView.SearchSelection.Protests)
             PoolManager.instance.SetPath(0);
-        PoolManager.instance.Clear();
 
         _rect.position = new Vector2(0, _atlas.height - _rect.height);
 

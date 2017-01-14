@@ -75,20 +75,38 @@ namespace ProtestBackend.Controllers.Notifications
             if (String.IsNullOrEmpty(indexQuery))
                 indexQuery = Request.Form["index"];
 
+            string protestQuery = Request.QueryString["protestIndex "];
+            if (String.IsNullOrEmpty(protestQuery))
+                protestQuery = Request.Form["protestIndex "];
+
             string nameQuery = Request.QueryString["searchString"];
             if (String.IsNullOrEmpty(nameQuery))
                 nameQuery = Request.Form["name"];
 
+            if (String.IsNullOrEmpty(nameQuery))
+                nameQuery = "";
+
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
                 SqlCommand command = new SqlCommand();
+                if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
+                {
+                    if(String.IsNullOrEmpty(nameQuery))
+                    {
+                        command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ")  AND type='Protest' AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
+                        command.Parameters.AddWithValue("@nameQuery", nameQuery);
+
+                        command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ")  AND type='Protest' ORDER BY id DESC";
+                    }
+                }
+
                 if (String.IsNullOrEmpty(nameQuery))
                 {
-                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ") ORDER BY id DESC";
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND type='Follow' ORDER BY id DESC";
                 }
                 else
                 {
-                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ") AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ")  AND type='Follow' AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
                     command.Parameters.AddWithValue("@nameQuery", nameQuery);
                 }
                 DataTable table = ConnectionManager.CreateQuery(command);
@@ -115,10 +133,21 @@ namespace ProtestBackend.Controllers.Notifications
             if (String.IsNullOrEmpty(indexQuery))
                 indexQuery = Request.Form["index"];
 
+            string protestQuery = Request.QueryString["protestIndex "];
+            if (String.IsNullOrEmpty(protestQuery))
+                protestQuery = Request.Form["protestIndex "];
+
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
+                int protests = 0;
                 SqlCommand command = new SqlCommand();
-                command.CommandText = "SELECT COUNT(*) FROM Notifications WHERE targetIndex IN (" + indexQuery + ")";
+                if (!String.IsNullOrEmpty(protestQuery) && Regex.IsMatch(protestQuery, @"^([0-9]+,?)+$"))
+                {
+                    command = new SqlCommand();
+                    command.CommandText = "SELECT COUNT(*) FROM Notifications WHERE targetIndex IN (" + protestQuery + ") AND type='Protest'";
+                    protests = ConnectionManager.CreateScalar(command);
+                }
+                command.CommandText = "SELECT COUNT(*) FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND type='Follow'";
                 int response = ConnectionManager.CreateScalar(command);
                 if (response <= 0)
                 {
@@ -126,7 +155,7 @@ namespace ProtestBackend.Controllers.Notifications
                 }
                 else
                 {
-                    return Content(SuccessCreation.Create("Successfully got the count", response));
+                    return Content(SuccessCreation.Create("Successfully got the count", response + protests));
                 }
             }
             return Content(Error.Create("Invalid request"));

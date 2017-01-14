@@ -100,7 +100,7 @@ public class ProtestEditController : Controller
             Return();
             return;
         }
-        Popup.Create("Delete", "Are you sure you want to delete this protest? It cannot be retrieved upon deletion.", DeleteCallback, "Popup", "Yes", "No");
+        Popup.Create("Delete", "Are you sure you want to delete this protest? To undo this action, contact us.", DeleteCallback, "Popup", "Yes", "No");
     }
 
     void DeleteCallback(int response)
@@ -163,7 +163,7 @@ public class ProtestEditController : Controller
         for (int i = 0; i < model.contributions.Length; i++)
         {
             _obj = PoolManager.instance.Create(_view.listHolder);
-            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(model.contributions[i], RemoveContribution);
+            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(model.contributions[i], RemoveContribution, true);
         }
     }
 

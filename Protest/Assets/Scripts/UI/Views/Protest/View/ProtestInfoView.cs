@@ -9,6 +9,7 @@ public class ProtestInfoView : View
     public Button reportButton;
 
     public Button userButton;
+    public Text userText;
     public Button editButton;
 
     public Image protestImage;
@@ -28,9 +29,9 @@ public class ProtestInfoView : View
 
         userButton.gameObject.SetActive(!ProtestController.instance.ourProtest);
         userButton.onClick.RemoveAllListeners();
-        userButton.onClick.AddListener(() => { ProfileViewController.instance.Show(model.userCreated, ProtestListController.instance); });
+        userButton.onClick.AddListener(() => { ProfileViewController.instance.Show(model.userCreated, ProtestController.instance); ProtestController.instance.Hide(); ProfileViewController.instance.Show(); });
         editButton.gameObject.SetActive(ProtestController.instance.ourProtest);
-        editButton.onClick.AddListener(() => { ProtestEditController.instance.Show(model.index, ProtestController.instance); });
+        editButton.onClick.AddListener(() => { ProtestEditController.instance.Show(model.index, ProtestController.instance); ProtestController.instance.Hide(); });
 
         DataParser.SetSprite(protestImage, model.protestPicture);
 
@@ -53,5 +54,14 @@ public class ProtestInfoView : View
         {
             editButton.gameObject.SetActive(false);
         }
+
+        int[] me = new int[1];
+        me[0] = model.userCreated;
+        DataParser.GetUsers(me, "", Callback);
+    }
+
+    void Callback(UserModel[] users)
+    {
+        userText.text = users[0].name;
     }
 }

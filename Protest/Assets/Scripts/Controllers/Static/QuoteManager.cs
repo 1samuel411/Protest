@@ -44,6 +44,15 @@ public class QuoteManager : Base
     {
         AddQuote("Courage is resistance to fear, mastery of fear, not absence of fear.", "Mark Twain");
         AddQuote("You must be the change you wish to see in the world.", "Mahatma Gandhi"); 
+        AddQuote("Life is 10% what happens to you and 90% how you react to it.", "Charles R. Swindoll");
+        AddQuote("In order to succeed, we must first believe that we can.", "Nikos Kazantzakis");
+        AddQuote("Keep your eyes on the stars, and your feet on the ground.", "Theodore Roosevelt");
+        AddQuote("It always seems impossible until it's done.", "Nelson Mandela");
+        AddQuote("You can't cross the sea merely by standing and staring at the water.", "Rabindranath Tagore");
+        AddQuote("It does not matter how slowly you go as long as you do not stop.", "Confucius");
+        AddQuote("Problems are not stop signs, they are guidelines.", "Robert H. Schuller");
+        AddQuote("We should not give up and we should not allow the problem to defeat us.", "A. P. J. Abdul Kalam");
+        AddQuote("Be kind whenever possible. It is always possible.", "Dalai Lama");
     }
 
     private static void AddQuote(string quote, string name)

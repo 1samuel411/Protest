@@ -53,8 +53,12 @@ namespace ProtestBackend.Controllers.User
                         user.followers = Parser.ParseColumnsToIntArray(tableInfo.Rows, 0);
 
                         // Find protests
-                        tableInfo = ConnectionManager.CreateQuery("SELECT id FROM Protests WHERE userCreated=" + index);
+                        tableInfo = ConnectionManager.CreateQuery("SELECT id FROM Protests WHERE deleted='False' AND userCreated=" + index);
                         user.protestsCreated = Parser.ParseColumnsToIntArray(tableInfo.Rows, 0);
+
+                        // Find going
+                        tableInfo = ConnectionManager.CreateQuery("SELECT protestId FROM Going WHERE userId=" + index);
+                        user.protestsAttended = Parser.ParseColumnsToIntArray(tableInfo.Rows, 0);
 
                         string result = JsonConvert.SerializeObject(user);
                         return Content(result);
@@ -390,13 +394,16 @@ namespace ProtestBackend.Controllers.User
                 lastLogin = "google";
 
             SqlCommand command = new SqlCommand();
-            command.CommandText = "SELECT (id) FROM Users WHERE facebookUserToken=@facebookUserToken";
+            command.CommandText = "SELECT id, banned FROM Users WHERE facebookUserToken=@facebookUserToken";
             command.Parameters.AddWithValue("@facebookUserToken", facebookUserToken);
             DataTable table = ConnectionManager.CreateQuery(command);
             if(table.Rows.Count > 0)
             {
                 // Exists
-
+                if(table.Rows[0].Field<bool>("banned"))
+                {
+                    return Content(Error.Create("User is banned"));
+                }
                 // Update sessionToken
                 command.Parameters.Clear();
                 command.CommandText = "UPDATE Users SET lastLogin=@lastLogin, sessionToken=@sessionToken, lastDevice=@lastDevice, lastLoginTime=@lastLoginTime WHERE id=@id";
@@ -536,8 +543,8 @@ namespace ProtestBackend.Controllers.User
                     {
                         // notify user we unfollowed
                         NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " unfollowed you.", NotificationManager.Type.Follow, "follow");
-                        NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " unfollowed " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                     }
+                    NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " unfollowed " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                     return Content(Success.Create("Successfully unfollowed user"));
                 }
                 else
@@ -556,8 +563,8 @@ namespace ProtestBackend.Controllers.User
                 {
                     //notify user we followed
                     NotificationManager.SendNotification(id, indexint, user.Rows[0].Field<string>("name") + " followed you.", NotificationManager.Type.Follow, "follow");
-                    NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " is following " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                 }
+                NotificationManager.CreateNotification(id, indexint, user.Rows[0].Field<string>("profilePicture"), user.Rows[0].Field<string>("name") + " is following " + tableIndex.Rows[0].Field<string>("name") + "", NotificationManager.Type.Follow);
                 return Content(Success.Create("Successfully followed user"));
             }
             else

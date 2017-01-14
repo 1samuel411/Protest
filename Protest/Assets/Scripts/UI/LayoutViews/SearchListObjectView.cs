@@ -14,7 +14,8 @@ public class SearchListObjectView : View
     public Button button;
 
     public Button iconButton;
-     
+
+    public UserModel user;
 
     public void ChangeInfoProtest(ProtestModel protestModel, Sprite sprite, Action<int> protestCallback)
     {
@@ -26,14 +27,15 @@ public class SearchListObjectView : View
         button.onClick.AddListener(() => { protestCallback(protestModel.index); });
     }
 
-    public void ChangeInfoUser(UserModel userMode, Sprite sprite, Action<int> userCallback)
+    public void ChangeInfoUser(UserModel userModel, Sprite sprite, Action<int> userCallback)
     {
+        user = userModel;
         iconImage.sprite = sprite;
-        nameText.text = userMode.name;
+        nameText.text = userModel.name;
         dateText.text = "";
 
         button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() => { userCallback(userMode.index); });
+        button.onClick.AddListener(() => { userCallback(userModel.index); });
     }
 
     public void ChangeInfoNews(NewsModel newsModel, Sprite sprite, Action<NewsModel> notificationCallback)

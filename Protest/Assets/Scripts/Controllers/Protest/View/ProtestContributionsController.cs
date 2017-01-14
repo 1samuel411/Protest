@@ -51,20 +51,14 @@ public class ProtestContributionsController : Controller
                 return;
 
             _obj = PoolManager.instance.Create(_view.listHolder);
-            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(contributionsData[i].index, AddContribution, RemoveContribution);
+            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(contributionsData[i].index, Interact, false);
         }
     }
 
-    public void AddContribution(int id)
+    public void Interact(int id)
     {
         Log.Create(1, "Adding Contribution", "ProtestContributionsController");
         DataParser.AddContribution(id);
-    }
-
-    public void RemoveContribution(int id)
-    {
-        Log.Create(1, "Removing Contribution", "ProtestContributionsController");
-        DataParser.RemoveContribution(id);
     }
 
     public void Donate(float amount)

@@ -135,7 +135,7 @@ public class Authentication : Base
     public static void Authenticate(string userId, string sessionKey, LoginType loginType, string profilePicture = "", string name = "", string email = "", string bio = "", string facebookUserToken = "", string googleUserToken = "", string facebookUser = "")
     {
         Log.Create(2, "Authentication Checking Session: " + sessionKey + " | UserId = " + userId, "Authentication");
-
+        LoadingController.instance._View.loading = true;
         DataParser.AuthenticateUser(ResponseAuthenticate, loginType, sessionKey.Trim(), profilePicture, name, email, bio, facebookUserToken, googleUserToken, facebookUser);
     }
 

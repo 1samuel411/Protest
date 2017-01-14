@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ProfileViewController : Controller
@@ -41,10 +42,22 @@ public class ProfileViewController : Controller
 
     public void GetUserCallback(UserModel user)
     {
-        SpinnerController.instance.Hide();
         _previousController.Hide();
         view.gameObject.SetActive(true);
         _view.userModel = user;
+        if(user.protestsAttended.Length <= 0 && user.protestsCreated.Length <= 0)
+        {
+            SpinnerController.instance.Hide();
+            return;
+        }
+        DataParser.GetProtests(user.protestsAttended.Take(16).Union(user.protestsCreated.Take(16)).ToArray(), 0, 0, "", GetProtestCallback);
+    }
+
+    private ProtestModel[] protests;
+    public void GetProtestCallback(ProtestModel[] protests)
+    {
+        this.protests = protests;
+        DataParser.GetAtlas(protests.Select(x => x.protestPicture).ToArray(), GetAtlasCallback);
     }
 
     public void EditProfile(UserModel user)
@@ -95,37 +108,28 @@ public class ProfileViewController : Controller
     }
 
     PoolObject _obj;
-    private UserModel userModel;
-    public void PopulateProtests(UserModel user)
+    private Rect _rect = new Rect(0, 0, 128, 128);
+    public void GetAtlasCallback(Texture2D _atlas)
     {
-        userModel = user;
         PoolManager.instance.SetPath(2);
         PoolManager.instance.Clear();
 
-        for (int i = 0; i < user.protestsAttended.Length; i++)
+        SpinnerController.instance.Hide();
+
+        _rect.position = new Vector2(0, _atlas.height - _rect.height);
+
+        for (int i = 0; i < protests.Length; i++)
         {
-            if (i > 16)
-                return;
-
-            if (user.protestsAttended.Length <= 0)
-                return;
-
             _obj = PoolManager.instance.Create(_view.protestsHolder);
             ProtestIconObjectView view = _obj.GetComponent<ProtestIconObjectView>();
-            view.ChangeInfo(user.protestsAttended[i], OpenProtest);
-        }
 
-        for (int i = 0; i < user.protestsCreated.Length; i++)
-        {
-            if (i > 16)
-                return;
-
-            if (user.protestsCreated.Length <= 0)
-                return;
-
-            _obj = PoolManager.instance.Create(_view.protestsHolder);
-            ProtestIconObjectView view = _obj.GetComponent<ProtestIconObjectView>();
-            view.ChangeInfo(user.protestsCreated[i], OpenProtest);
+            view.ChangeInfo(Sprite.Create(_atlas, _rect, Vector2.zero), protests[i].index, OpenProtest);
+            _rect.x += _rect.width;
+            if (_rect.x >= (_atlas.width))
+            {
+                _rect.y -= _rect.height;
+                _rect.x = 0;
+            }
         }
     }
 
@@ -138,25 +142,25 @@ public class ProfileViewController : Controller
     public void OpenFollowers()
     {
         Log.Create(1, "Opening Followers", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.followers, userModel, ProtestListController.instance);
+        ListController.instance.Show(ListController.ShowType.followers, _view.userModel, ProtestListController.instance);
     }
 
     public void OpenFollowing()
     {
         Log.Create(1, "Opening Following", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.following, userModel, ProtestListController.instance);
+        ListController.instance.Show(ListController.ShowType.following, _view.userModel, ProtestListController.instance);
     }
 
     public void OpenProtestsCreated()
     {
         Log.Create(1, "Opening Protests", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.created, userModel, ProtestListController.instance);
+        ListController.instance.Show(ListController.ShowType.created, _view.userModel, ProtestListController.instance);
     }
 
     public void OpenAttended()
     {
         Log.Create(1, "Opening Attended", "ProfileViewController");
-        ListController.instance.Show(ListController.ShowType.attended, userModel, ProtestListController.instance);
+        ListController.instance.Show(ListController.ShowType.attended, _view.userModel, ProtestListController.instance);
     }
 
     public void OpenSnapchat(string url)

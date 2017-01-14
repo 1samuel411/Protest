@@ -55,11 +55,7 @@ public class ProtestGoingController : Controller
     {
         _beginIndex = 0;
         _endIndex = 0;
-
-        // Clear
-        PoolManager.instance.SetPath(1);
-        PoolManager.instance.Clear();
-
+        
         SpinnerController.instance.Show();
         listIndex = 1;
 
@@ -93,9 +89,7 @@ public class ProtestGoingController : Controller
     public void PopulateList()
     {
         // Clear
-        PoolManager.instance.SetPath(1);
-        PoolManager.instance.Clear();
-
+        
         Log.Create(1, "Populating List", "ProtestGoingController");
 
         if (_pageLength <= 0 || listIndex >= _pageLength)
@@ -117,6 +111,9 @@ public class ProtestGoingController : Controller
 
     private void PopulateWithAtlas(Texture2D _atlas)
     {
+        PoolManager.instance.SetPath(1);
+        PoolManager.instance.Clear();
+
         SpinnerController.instance.Hide();
 
         _rect.position = new Vector2(0, _atlas.height - _rect.height);
@@ -124,7 +121,7 @@ public class ProtestGoingController : Controller
         // Populate List
         for (int i = _beginIndex; i < _endIndex; i++)
         {
-            if(usersData[i] == null || usersData[i].profilePicture == "")
+            if(usersData[i] == null)
                 return;
 
             _obj = PoolManager.instance.Create(_view.listHolder);
@@ -137,6 +134,33 @@ public class ProtestGoingController : Controller
             {
                 _rect.y -= _rect.height;
                 _rect.x = 0;
+            }
+        }
+    }
+
+    private UserModel _user;
+    public void AddUser(UserModel user)
+    {
+        _user = user;
+        PoolManager.instance.SetPath(1);
+        DataParser.SetSprite(user.profilePicture, CallbackGetUserSprite, 128);
+    }
+
+    void CallbackGetUserSprite(Sprite sprite)
+    {
+        _obj = PoolManager.instance.Create(_view.listHolder);
+        _obj.transform.SetSiblingIndex(0);
+        _obj.GetComponent<SearchListObjectView>().ChangeInfoUser(_user, sprite, SelectUser);
+    }
+
+    public void RemoveUser(int user)
+    {
+        for (int i = 0; i < _view.listHolder.childCount; i++)
+        {
+            if (_view.listHolder.GetChild(i).GetComponent<SearchListObjectView>().user.index == user)
+            {
+                _view.listHolder.GetChild(i).GetComponent<PoolObject>().Hide();
+                return;
             }
         }
     }

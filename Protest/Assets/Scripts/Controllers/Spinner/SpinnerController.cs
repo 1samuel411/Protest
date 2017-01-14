@@ -8,7 +8,7 @@ public class SpinnerController : Controller
     public static new SpinnerController instance;
     private new Animation animation;
 
-    private float timeOutTime = 5.0f;
+    private float timeOutTime = 8.0f;
     private float curTimeOutTime;
 
     public void Awake()

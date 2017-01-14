@@ -44,6 +44,36 @@ public class DataParser : Base
         behaviour = this;
     }
 
+    #region Distance
+    public static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+    {
+        double theta = lon1 - lon2;
+        double dist = Math.Sin(DegToRad(lat1)) * Math.Sin(RadToDeg(lat2)) +
+                      Math.Cos(DegToRad(lat1)) * Math.Cos(RadToDeg(lat2)) *
+                      Math.Cos(DegToRad(theta));
+        dist = Math.Acos(dist);
+        dist = RadToDeg(dist);
+        dist = dist * 60 * 1.1515;
+        return (dist);
+    }
+
+    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    //::  This function converts decimal degrees to radians             :::
+    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    private static double DegToRad(double deg)
+    {
+        return (deg * Math.PI / 180.0);
+    }
+
+    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    //::  This function converts radians to decimal degrees             :::
+    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    private static double RadToDeg(double rad)
+    {
+        return (rad / Math.PI * 180.0);
+    }
+    #endregion
+
     #region Picker
     void OnEnable()
     {
@@ -158,6 +188,8 @@ public class DataParser : Base
     public static string ParseStringArrayToString(string[] arrayToParse)
     {
         string value = "";
+        if(arrayToParse == null)
+            return "";
         if (arrayToParse.Length <= 0)
             return "";
 
@@ -296,10 +328,6 @@ public class DataParser : Base
         form.AddField("facebookUserToken", facebookUserToken);
         form.AddField("googleUserToken", googleUserToken);
         form.AddField("facebookUser", facebookUser);
-        string platform = "Android";
-#if UNITY_IOS
-        platform = "IOS";
-#endif
         form.AddField("platform", Application.platform.ToString());
 
         WWW www = new WWW(URL + "/User/Authenticate", form);
@@ -310,18 +338,30 @@ public class DataParser : Base
         {
             FB.LogOut();
             Debug.Log("Error: " + www.error);
+            LoadingController.instance._View.loading = false;
             yield break;
         }
         JSONObject jsonObj = new JSONObject(www.text);
-        if(jsonObj.GetField("success"))
+        if(jsonObj.HasField("success"))
         {
+            string successMessage = jsonObj.GetField("success").str;
+            if(successMessage.Contains("created"))
+            {
+                Popup.Create("Welcome!", "Thank you for joining Protest, we ask that you please be kind and courteous towards others to ensure an optimal experience for everyone.", null, "Popup", "Okay");
+            }
             Debug.Log("Success! Index: " + jsonObj.GetField("index").ToString());
             Callback(sessionKey, int.Parse(jsonObj.GetField("index").ToString()), loginType);
         }
         else
         {
-            Debug.Log("Error: " + jsonObj.GetField("error"));
+            string error = jsonObj.GetField("error").str;
+            if(error.Contains("banned"))
+            {
+                Popup.Create("Banned", "You are banned from Protest. If you believe this is an error please contact us for support.", null, "Popup", "Okay...");
+            }
+            Debug.Log("Error: " + error);
             FB.LogOut();
+            LoadingController.instance._View.loading = false;
         }
     }
     #endregion
@@ -806,7 +846,7 @@ public class DataParser : Base
         Callback("https://pbs.twimg.com/media/Coz8twTWcAADpJQ.png");
     }
 
-    public static void GetProtestList(int[] protests, float lat, float lng, string searchString, Action<ProtestModel[]> Callback)
+    public static void GetProtests(int[] protests, float lat, float lng, string searchString, Action<ProtestModel[]> Callback)
     {
         behaviour.StartCoroutine(GetProtestsCoroutine(protests, lat, lng, searchString, Callback));
     }
@@ -835,7 +875,7 @@ public class DataParser : Base
         if (jsonObj.HasField("error"))
         {
             Debug.Log("Error: " + jsonObj.GetField("error"));
-            Callback(new ProtestModel[0]);
+            Callback(null);
             yield break;
         }
 
@@ -849,24 +889,32 @@ public class DataParser : Base
 
     public static void DeleteProtest(int index)
     {
-
+        behaviour.StartCoroutine(DeleteProtestCoroutine(index));
     }
-    
-    public static ProtestModel[] SearchProtests(string search)
+    public static IEnumerator DeleteProtestCoroutine(int index)
     {
-        ProtestModel[] models = new ProtestModel[1];
-        //models[0] = new ProtestModel(0, "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "Our Portest Name", "Description", "426 NW 1st Ave Cape Coral, FL", "16.11.12.1.30.0", null, null, null, 0, 0, new int[2000], new int[0], new int[3], new int[3], Authentication.userIndex);
-        return models;
-    }
+        Debug.Log("Deleting Protest: " + index + ".");
+        WWWForm form = new WWWForm();
+        form.AddField("index", index);
+        form.AddField("sessionToken", Authentication.auth_token);
 
-    public static ProtestModel[] GetProtests(int[] protests)
-    {
-        ProtestModel[] models = new ProtestModel[0];
-        for (int i = 0; i < protests.Length; i++)
+        WWW www = new WWW(URL + "/Protest/Delete", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
         {
-            //models[i] = GetProtest(protests[i]);
+            Debug.Log("Error: " + www.error);
+            yield break;
         }
-        return models;
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
     }
     #endregion
 
@@ -926,24 +974,70 @@ public class DataParser : Base
     #endregion
 
     #region Likes and going
-    public static void LikeProtest(int protest)
+    public static void LikeProtest(int protest, Action<bool> Callback)
     {
-
+        behaviour.StartCoroutine(LikeProtestCoroutine(protest, Callback));
     }
 
-    public static void UnLikeProtest(int protest)
+    public static IEnumerator LikeProtestCoroutine(int index, Action<bool> Callback)
     {
+        Debug.Log("Liking Protest: " + index);
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", Authentication.auth_token);
+        form.AddField("index", index.ToString());
 
+        WWW www = new WWW(URL + "/Protest/Like", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+        Debug.Log("Success: " + jsonObj.GetField("success"));
+        Callback(!jsonObj.GetField("success").ToString().Contains("unliked"));
     }
 
-    public static void GoingProtest(int protest)
+    public static void GoingProtest(int protest, Action<bool> Callback)
     {
-
+        behaviour.StartCoroutine(GoingProtestCoroutine(protest, Callback));
     }
 
-    public static void NotGoingProtest(int protest)
+    public static IEnumerator GoingProtestCoroutine(int index, Action<bool> Callback)
     {
+        Debug.Log("Going to Protest: " + index);
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", Authentication.auth_token);
+        form.AddField("index", index.ToString());
 
+        WWW www = new WWW(URL + "/Protest/Going", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+        Debug.Log("Success: " + jsonObj.GetField("success"));
+        Callback(!jsonObj.GetField("success").ToString().Contains("unwent"));
     }
     #endregion
 
@@ -983,16 +1077,17 @@ public class DataParser : Base
     #endregion
 
     #region Notifications and news
-    public static void GetNotifications(int[] index, Action<int> Callback)
+    public static void GetNotifications(int[] index, int[] protests, Action<int> Callback)
     {
-        behaviour.StartCoroutine(GetNotificationsCoroutine(index, Callback));
+        behaviour.StartCoroutine(GetNotificationsCoroutine(index, protests, Callback));
     }
 
-    public static IEnumerator GetNotificationsCoroutine(int[] index, Action<int> Callback)
+    public static IEnumerator GetNotificationsCoroutine(int[] index, int[] protests, Action<int> Callback)
     {
         Debug.Log("Finding notifications count");
         WWWForm form = new WWWForm();
         form.AddField("index", ParseIntArrayToString(index));
+        form.AddField("protestIndex", ParseIntArrayToString(protests));
 
         WWW www = new WWW(URL + "/Notifications/FindNotificationCount", form);
 
@@ -1018,16 +1113,17 @@ public class DataParser : Base
         Callback((int)jsonObj.GetField("index").n);
     }
 
-    public static void GetNews(int[] index, string searchString, Action<NewsModel[]> Callback)
+    public static void GetNews(int[] index, int[] protests, string searchString, Action<NewsModel[]> Callback)
     {
-        behaviour.StartCoroutine(GetNewsCoroutine(index, searchString, Callback));
+        behaviour.StartCoroutine(GetNewsCoroutine(index, protests, searchString, Callback));
     }
 
-    public static IEnumerator GetNewsCoroutine(int[] index, string searchString, Action<NewsModel[]> Callback)
+    public static IEnumerator GetNewsCoroutine(int[] index, int[] protests, string searchString, Action<NewsModel[]> Callback)
     {
         Debug.Log("Finding notifications with search:" + searchString + ".");
         WWWForm form = new WWWForm();
         form.AddField("index", ParseIntArrayToString(index));
+        form.AddField("protestIndex", ParseIntArrayToString(protests));
         form.AddField("name", searchString);
 
         WWW www = new WWW(URL + "/Notifications/FindNotifications", form);

@@ -56,8 +56,8 @@ public class ProtestListController : Controller
 
     public void LoadNotifications()
     {
-        // Get coutn of notifications
-        DataParser.GetNotifications(Authentication.userModel.following, HasNotificationsCallback);
+        // Get count of notifications
+        DataParser.GetNotifications(Authentication.userModel.following, Authentication.userModel.protestsCreated, HasNotificationsCallback);
     }
 
     public int notificationCount;
@@ -76,6 +76,11 @@ public class ProtestListController : Controller
     public ProtestListView GetView()
     {
         return _view;
+    }
+
+    public new void Show()
+    {
+        view.gameObject.SetActive(true);
     }
 
     float latitude;
@@ -118,12 +123,18 @@ public class ProtestListController : Controller
 
         Log.Create(1, "Populating from server", "ProtestController");
 
-        DataParser.GetProtestList(null, latitude, longitude, "", GetProtestList);
+        DataParser.GetProtests(null, latitude, longitude, "", GetProtestList);
     }
 
     public void GetProtestList(ProtestModel[] models)
     {
         Debug.Log("Got list!");
+        if(models == null)
+        {
+            LoadingController.instance.Hide();
+            SpinnerController.instance.Hide();
+            return;
+        }
         protestsData = models;
         _pageLength = (protestsData.Length / _pageSize) + 1;
         _beginIndex = 0;
@@ -168,7 +179,7 @@ public class ProtestListController : Controller
 
     private void PopulateWithAtlas(Texture2D _atlas)
     {
-        if(!LoadingController.instance.view.gameObject.activeInHierarchy)
+        if(LoadingController.instance.view.gameObject.activeInHierarchy)
             CallbackReady(0);
 
         SpinnerController.instance.Hide();
