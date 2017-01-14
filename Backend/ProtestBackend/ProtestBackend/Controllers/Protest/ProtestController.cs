@@ -144,7 +144,8 @@ namespace ProtestBackend.Controllers.Protest
             for(int i = 0; i < table.Rows.Count;i ++)
             {
                 targetIndex = table.Rows[i].Field<int>("userId");
-                NotificationManager.SendNotification(userIndex, targetIndex, userName + " created a new Protest.", NotificationManager.Type.Protest, "protest");
+                if(targetIndex != userIndex)
+                    NotificationManager.SendNotification(userIndex, targetIndex, userName + " created a new Protest.", NotificationManager.Type.Protest, "protest");
             }
             NotificationManager.CreateNotification(userIndex, indexCreated, userProfilePicture, userName + " created a new Protest, " + name, NotificationManager.Type.Protest);
 
@@ -320,7 +321,7 @@ namespace ProtestBackend.Controllers.Protest
             }
             string time = Parser.UnparseDate(DateTime.UtcNow);
             command.Parameters.Clear();
-            command.CommandText = "UPDATE Protests SET protestPicture=@protestPicture, name=@name, description=@description, location=@location, date=@date, donationsEmail=@donationsEmail, donationTarget=@donationTarget, userCreated=@userCreated, latitude=@latitude, longitude=longitude WHERE id=" + index;
+            command.CommandText = "UPDATE Protests SET protestPicture=@protestPicture, name=@name, description=@description, location=@location, date=@date, donationsEmail=@donationsEmail, donationTarget=@donationTarget, userCreated=@userCreated, latitude=@latitude, longitude=@longitude WHERE id=" + index;
             command.Parameters.AddWithValue("@protestPicture", protestPicture);
             command.Parameters.AddWithValue("@name", name);
             command.Parameters.AddWithValue("@description", description);
@@ -349,7 +350,8 @@ namespace ProtestBackend.Controllers.Protest
             for (int i = 0; i < table.Rows.Count; i++)
             {
                 targetIndex = table.Rows[i].Field<int>("userId");
-                NotificationManager.SendNotification(userIndex, targetIndex, userName + " updated a Protest you are attending.", NotificationManager.Type.Protest, "protest");
+                if(targetIndex != userIndex)
+                    NotificationManager.SendNotification(userIndex, targetIndex, userName + " updated a Protest you are attending.", NotificationManager.Type.Protest, "protest");
             }
             NotificationManager.CreateNotification(userIndex, indexInt, userProfilePicture, userName + " updated the Protest, " + name, NotificationManager.Type.Protest);
 
