@@ -1001,7 +1001,7 @@ public class DataParser : Base
             yield break;
         }
 
-        Debug.Log("Creating Contributions: " + model.name);
+        Debug.Log("Creating Contributions: " + model.name + ", " + model.amountNeeded + ", " + model.protest);
         WWWForm form = new WWWForm();
         form.AddField("name", model.name);
         form.AddField("amountNeeded", model.amountNeeded);
@@ -1072,7 +1072,7 @@ public class DataParser : Base
         Debug.Log("Gettings Contributions: " + indexes);
         WWWForm form = new WWWForm();
         form.AddField("index", DataParser.ParseIntArrayToString(indexes));
-        WWW www = new WWW(URL + "/Contributions/FindContributions", form);
+        WWW www = new WWW(URL + "/Contributions/Find", form);
 
         yield return www;
 

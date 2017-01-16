@@ -3451,7 +3451,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Content: {fileID: 224303375130681336}
-  m_Horizontal: 1
+  m_Horizontal: 0
   m_Vertical: 1
   m_MovementType: 1
   m_Elasticity: 0.1
@@ -7381,8 +7381,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -7.5, y: 20.000006}
-  m_SizeDelta: {x: -15, y: -100.000015}
+  m_AnchoredPosition: {x: 0, y: 20.000006}
+  m_SizeDelta: {x: -30, y: -100.000015}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224552504085144812
 RectTransform:

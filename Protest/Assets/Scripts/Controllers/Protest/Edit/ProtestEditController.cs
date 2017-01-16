@@ -108,27 +108,38 @@ public class ProtestEditController : Controller
 
     void AddContributionCreationCallback(ContributionsModel newContribution)
     {
-        if (i >= model.contributionModels.Length)
+        if (i >= model.contributionModels.Length - 1)
         {
-            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
+            CompleteCreateFinal();
             return;
         }
-        Debug.Log("Creating protest contribution: " + i + ". -----------------------------");
-        model.contributions = model.contributions.Union(new int[] { newContribution.index }).ToArray();
         i++;
+        model.contributionModels[i].protest = model.index;
         DataParser.CreateContribution(model.contributionModels[i], AddContributionCreationCallback);
     }
 
     int i = 0;
     void CompleteCreate()
     {
-        if(model.contributionModels.Length <= 0)
-            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
-        else
+        if (model.contributionModels.Length > 0)
         {
             i = 0;
+            model.contributionModels[i].protest = model.index;
             DataParser.CreateContribution(model.contributionModels[i], AddContributionCreationCallback);
         }
+        else
+            CompleteCreateFinal();
+    }
+
+    void CompleteCreateFinal()
+    {
+        Debug.Log("Completed: " + model.index);
+        SpinnerController.instance.Hide();
+        Log.Create(2, "Complete Protest", "ProtestEditController");
+        ProtestController.instance.Show(model.index, ProtestListController.instance);
+        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
+        Hide();
+        return;
     }
 
     public void CompleteFinal()
@@ -137,18 +148,14 @@ public class ProtestEditController : Controller
             DataParser.EditProtest(model, Authentication.auth_token, CompleteCallback);
         else
         {
-            CompleteCreate();
+            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
         }
     }
 
     public void CompleteCallback(int protestIndex)
     {
-        Debug.Log("Completed: " + protestIndex);
-        SpinnerController.instance.Hide();
-        Log.Create(2, "Complete Protest", "ProtestEditController");
-        ProtestController.instance.Show(protestIndex, ProtestListController.instance);
-        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
-        Hide();
+        model.index = protestIndex;
+        CompleteCreate();
     }
 
     public void Delete()
@@ -239,7 +246,7 @@ public class ProtestEditController : Controller
         model.protest = this.model.index;
         PoolManager.instance.SetPath(3);
 
-        if (this.model.contributionModels.Select(x => x.name == model.name).Any())
+        if (this.model.contributionModels.Any(x => x.name == model.name))
         {
             Popup.Create("Duplicate", "There is already a contribution with the provided name", null, "Popup", "Okay");
             return;

@@ -53,6 +53,7 @@ public class QuoteManager : Base
         AddQuote("Problems are not stop signs, they are guidelines.", "Robert H. Schuller");
         AddQuote("We should not give up and we should not allow the problem to defeat us.", "A. P. J. Abdul Kalam");
         AddQuote("Be kind whenever possible. It is always possible.", "Dalai Lama");
+        AddQuote("Life has no limitations, except the ones you make.", "Les Brown");
     }
 
     private static void AddQuote(string quote, string name)

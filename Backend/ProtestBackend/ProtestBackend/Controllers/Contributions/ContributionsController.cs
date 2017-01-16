@@ -89,10 +89,11 @@ namespace ProtestBackend.Controllers.Contributions
             }
 
             command.Parameters.Clear();
-            command = new SqlCommand("SELECT id FROM Contributions WHERE name=@name AND amountNeeded=@amountNeeded AND protest=@protest");
+            command = new SqlCommand("SELECT id FROM Contributions WHERE name=@name AND amountNeeded=@amountNeeded AND protest=@protest AND time=@time");
             command.Parameters.AddWithValue("@name", name);
             command.Parameters.AddWithValue("@amountNeeded", amountNeededInt);
             command.Parameters.AddWithValue("@protest", protestInt);
+            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
             table = ConnectionManager.CreateQuery(command);
             if (table.Rows.Count <= 0)
             {
@@ -197,7 +198,7 @@ namespace ProtestBackend.Controllers.Contributions
             int indexInt = 0;
             string index = Request.QueryString["index"];
             if (String.IsNullOrEmpty(index))
-                index = Request.Form["amountNeeded"];
+                index = Request.Form["index"];
 
             string sessionToken = Request.QueryString["sessionToken"];
             if (String.IsNullOrEmpty(sessionToken))
