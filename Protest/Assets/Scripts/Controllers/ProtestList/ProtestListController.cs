@@ -57,7 +57,7 @@ public class ProtestListController : Controller
     public void LoadNotifications()
     {
         // Get count of notifications
-        DataParser.GetNotifications(Authentication.userModel.following, Authentication.userModel.protestsCreated, HasNotificationsCallback);
+        DataParser.GetNotifications(Authentication.userModel.following, Authentication.userModel.protestsCreated.Union(Authentication.userModel.protestsAttended).ToArray(), HasNotificationsCallback);
     }
 
     public int notificationCount;

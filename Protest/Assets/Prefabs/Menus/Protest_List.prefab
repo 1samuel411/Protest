@@ -3453,8 +3453,7 @@ MonoBehaviour:
   positionHideList: 295
   positionViewMenubar: 193
   positionHideMenubar: -135
-  moveSpeed: 0.36
-  viewMenuBar: 0
+  moveSpeed: 0.2
   listHolder: {fileID: 224079369042204032}
   notificationIcon: {fileID: 1154493915564482}
   notificationText: {fileID: 114669863852303552}

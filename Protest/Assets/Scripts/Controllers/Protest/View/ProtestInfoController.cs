@@ -67,4 +67,9 @@ public class ProtestInfoController : Controller
         SpinnerController.instance.Hide();
         Popup.Create("Report Sent", "Your report will be reviewed, Thank you for your submission", null, "Popup", "Okay");
     }
+
+    public void ViewProtestImage()
+    {
+        ImageViewController.instance.Show(_view.protestImage.sprite, this);
+    }
 }

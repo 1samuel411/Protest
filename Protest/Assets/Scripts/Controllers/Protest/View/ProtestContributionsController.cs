@@ -23,16 +23,14 @@ public class ProtestContributionsController : Controller
         _view.ChangeUI();
         if (ProtestController.instance.ourProtest || ProtestController.instance.GetModel().donationsEmail == "")
             _view.moneyView.SetActive(false);
-        contributionsData = DataParser.GetContributions(ProtestController.instance.GetModel().contributions);
 
-        Log.Create(1, "Populating from server", "ProtestContributionsController");
-
-        PopulateList();
+        DataParser.GetContributions(ProtestController.instance.GetModel().contributions, PopulateList);
     }
 
     private PoolObject _obj;
-    public void PopulateList()
+    public void PopulateList(ContributionsModel[] contributionsData)
     {
+        this.contributionsData = contributionsData;
         if (contributionsData.Length <= 0)
         {
             return;
@@ -51,14 +49,20 @@ public class ProtestContributionsController : Controller
                 return;
 
             _obj = PoolManager.instance.Create(_view.listHolder);
-            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(contributionsData[i].index, Interact, false);
+            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(contributionsData[i], Interact, false);
         }
     }
 
-    public void Interact(int id)
+    public void Interact(ContributionsModel model)
     {
+        SpinnerController.instance.Show();
         Log.Create(1, "Adding Contribution", "ProtestContributionsController");
-        DataParser.AddContribution(id);
+        DataParser.AddContribution(model.index, AddCallback);
+    }
+
+    void AddCallback()
+    {
+        SpinnerController.instance.Hide();
     }
 
     public void Donate(float amount)

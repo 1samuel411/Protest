@@ -212,4 +212,9 @@ public class ProfileViewController : Controller
         SpinnerController.instance.Hide();
         _view.userModel = user;
     }
+
+    public void ViewProfileImage()
+    {
+        ImageViewController.instance.Show(_view.profileImage.sprite, this);
+    }
 }

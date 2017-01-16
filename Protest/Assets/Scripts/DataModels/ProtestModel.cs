@@ -21,8 +21,11 @@ public class ProtestModel : Model
 
     public int[] likes;
     public int[] going;
+    public int likesCount;
+    public int goingCount;
 
     public int[] contributions;
+    public ContributionsModel[] contributionModels;
 
     public int[] chats;
 
@@ -98,6 +101,11 @@ public class ProtestModel : Model
         likes = new int[0];
         contributions = new int[0];
         chats = new int[0];
+
+        if (jsonObj.HasField("goingCount"))
+            goingCount = (int)(jsonObj.GetField("goingCount").n);
+        if (jsonObj.HasField("likesCount"))
+            likesCount = (int)(jsonObj.GetField("likesCount").n);
 
         if (jsonObj.HasField("going") && jsonObj.GetField("going").list != null)
             going = DataParser.ParseJsonToIntArray(jsonObj.GetField("going").list);

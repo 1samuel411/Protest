@@ -9,21 +9,12 @@ using System.Text;
 using System.Web;
 using System.Web.Configuration;
 
-using Microsoft.Azure; // Namespace for CloudConfigurationManager
-using Microsoft.WindowsAzure.Storage; // Namespace for CloudStorageAccount
-using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Blob storage types
-using System.Drawing;
-using System.Threading;
-
 namespace ProtestBackend.DAL
 {
     public class ConnectionManager
     {
         private const string SERVERNAMEFIELD = "Database";  // Connection string name from Web.config
-
-        private const string STORAGENAMEFIELD = "ProtestStorage"; // Stoage Connection string name from Web.config
-        private const string STORAGEURL = "protest.core.windows.net";
-
+        
         public static SqlConnection OpenConnection()
         {
             SqlConnection connection = new SqlConnection(WebConfigurationManager.ConnectionStrings[SERVERNAMEFIELD].ConnectionString);
@@ -140,31 +131,6 @@ namespace ProtestBackend.DAL
             {
                 return ex.ToString();
             }
-        }
-
-        public static string UploadToStorage(string containerName, string name, HttpPostedFileBase file)
-        {
-            CloudStorageAccount storageAcc = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting(STORAGENAMEFIELD));
-
-            // Create the blob client.
-            CloudBlobClient blobClient = storageAcc.CreateCloudBlobClient();
-
-            // Retrieve a reference to a container.
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
-
-            container.SetPermissions(
-                new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
-
-            // Create the container if it doesn't already exist.
-            container.CreateIfNotExists();
-
-            // Retrieve reference to a blob.
-            CloudBlockBlob blockBlob = container.GetBlockBlobReference(name);
-            blockBlob.DeleteIfExists();
-
-            blockBlob.BeginUploadFromStream(file.InputStream, null, null);
-
-            return STORAGEURL + "/" + containerName + "/" + name;
         }
     }
 }

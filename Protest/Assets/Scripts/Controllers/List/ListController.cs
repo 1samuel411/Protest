@@ -37,7 +37,7 @@ public class ListController : Controller
         }
         set
         {
-            _listIndex = 0;
+            _listIndex = 1;
             _searchString = value;
             if (model != null)
                 if (showType == ShowType.news)
@@ -109,10 +109,12 @@ public class ListController : Controller
 
     void GetNewsCallback(NewsModel[] models)
     {
-        _beginIndex = 0;
-        _endIndex = 0;
-
         newsModels = models;
+        if (newsModels.Length <= 0)
+        {
+            SpinnerController.instance.Hide();
+            return;
+        }
 
         _pageLength = (newsModels.Length / _pageSize) + 1;
 
@@ -124,11 +126,6 @@ public class ListController : Controller
         _beginIndex = listIndex * _pageSize;
         _beginIndex -= _pageSize;
 
-        if (models.Length <= 0)
-        {
-            SpinnerController.instance.Hide();
-            return;
-        }
         DataParser.GetAtlas(newsModels.Skip(_beginIndex).Take(_endIndex).Select(x => x.picture).ToArray(), PopulateWithAtlas);
     }
 

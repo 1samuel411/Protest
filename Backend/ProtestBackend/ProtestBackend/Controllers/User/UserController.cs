@@ -358,13 +358,7 @@ namespace ProtestBackend.Controllers.User
                 return Content(success.ToString());
             }
         }
-
-        // POST: Set Icon
-        public ActionResult SetIcon()
-        {
-            return Content("");
-        }
-
+        
         // POST: Authenticate
         public ActionResult Authenticate()
         {

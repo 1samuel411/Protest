@@ -190,12 +190,15 @@ namespace ProtestBackend.Controllers.Protest
                             }
                         }
 
-                        // Find followers
                         table = ConnectionManager.CreateQuery("SELECT userId FROM Going WHERE protestId=" + index);
                         protest.going = Parser.ParseColumnsToIntArray(table.Rows, 0);
+
                         table = ConnectionManager.CreateQuery("SELECT userId FROM Likes WHERE protestId=" + index);
                         protest.likes = Parser.ParseColumnsToIntArray(table.Rows, 0);
-                        protest.contributions = new int[0];
+
+                        table = ConnectionManager.CreateQuery("SELECT id FROM Contributions WHERE protest=" + index);
+                        protest.contributions = Parser.ParseColumnsToIntArray(table.Rows, 0);
+
                         protest.chats = new int[0];
 
                         string result = JsonConvert.SerializeObject(protest);
@@ -427,7 +430,6 @@ namespace ProtestBackend.Controllers.Protest
                 if (String.IsNullOrEmpty(nameQuery))
                 {
                     command = new SqlCommand("SELECT TOP 500 id, protestPicture, name, location, date, latitude, longitude, userCreated FROM Protests WHERE deleted='False' AND id IN (" + indexQuery + ") ORDER BY id DESC");
-                    command.Parameters.AddWithValue("@search", nameQuery);
                     table = ConnectionManager.CreateQuery(command);
                 }
                 else
@@ -548,7 +550,8 @@ namespace ProtestBackend.Controllers.Protest
                     if (notifyUser)
                     {
                         // notify user we unfollowed
-                        NotificationManager.SendNotification(id, userProtestCreated, userName + " unliked your Protest.", NotificationManager.Type.Protest, "likes");
+                        if(id != indexint)
+                            NotificationManager.SendNotification(id, userProtestCreated, userName + " unliked your Protest.", NotificationManager.Type.Protest, "likes");
                     }
 
                     NotificationManager.CreateNotification(id, indexint, profilePicture, userName + " unliked " + protestName + "", NotificationManager.Type.Protest);
@@ -569,7 +572,8 @@ namespace ProtestBackend.Controllers.Protest
                 if (notifyUser)
                 {
                     // notify user we unfollowed
-                    NotificationManager.SendNotification(id, userProtestCreated, userName + " liked your Protest.", NotificationManager.Type.Protest, "likes");
+                    if(id != indexint)
+                        NotificationManager.SendNotification(id, userProtestCreated, userName + " liked your Protest.", NotificationManager.Type.Protest, "likes");
                 }
 
                 NotificationManager.CreateNotification(id, indexint, profilePicture, userName + " liked " + protestName + "", NotificationManager.Type.Protest);

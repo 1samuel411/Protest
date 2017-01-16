@@ -181,6 +181,7 @@
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Contributions\ContributionsController.cs" />
     <Compile Include="Controllers\Locations\LocationController.cs" />
     <Compile Include="Controllers\Notifications\NotificationsController.cs" />
     <Compile Include="Controllers\Protest\ProtestController.cs" />
@@ -189,6 +190,7 @@
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="DAL\FacebookManager.cs" />
     <Compile Include="DAL\NotificationManager.cs" />
+    <Compile Include="DAL\StorageManager.cs" />
     <Compile Include="DLL\Parser.cs" />
     <Compile Include="Controllers\User\UserController.cs" />
     <Compile Include="Global.asax.cs">
@@ -197,6 +199,8 @@
     <Compile Include="Models\DeviceRegistration.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="Models\NotificationModel.cs" />
+    <Compile Include="Models\ContributionModel.cs" />
+    <Compile Include="Models\SuccessUrl.cs" />
     <Compile Include="Models\SuccessCoordinates.cs" />
     <Compile Include="Models\SuccessCreation.cs" />
     <Compile Include="Models\Success.cs" />
@@ -221,6 +225,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Contributions\" />
     <Folder Include="Views\Default\" />
     <Folder Include="Views\Location\" />
     <Folder Include="Views\Tools\" />

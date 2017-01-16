@@ -75,41 +75,45 @@ namespace ProtestBackend.Controllers.Notifications
             if (String.IsNullOrEmpty(indexQuery))
                 indexQuery = Request.Form["index"];
 
-            string protestQuery = Request.QueryString["protestIndex "];
+            string protestQuery = Request.QueryString["protestIndex"];
             if (String.IsNullOrEmpty(protestQuery))
-                protestQuery = Request.Form["protestIndex "];
+                protestQuery = Request.Form["protestIndex"];
 
-            string nameQuery = Request.QueryString["searchString"];
+            string nameQuery = Request.QueryString["name"];
             if (String.IsNullOrEmpty(nameQuery))
                 nameQuery = Request.Form["name"];
-
-            if (String.IsNullOrEmpty(nameQuery))
-                nameQuery = "";
 
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
                 SqlCommand command = new SqlCommand();
-                if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
+                DataTable table = new DataTable();
+                if (!String.IsNullOrEmpty(protestQuery) && Regex.IsMatch(protestQuery, @"^([0-9]+,?)+$"))
                 {
-                    if(String.IsNullOrEmpty(nameQuery))
+                    if (!String.IsNullOrEmpty(nameQuery))
                     {
-                        command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ")  AND type='Protest' AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
+                        command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + protestQuery + ")  AND type='Protest' AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
                         command.Parameters.AddWithValue("@nameQuery", nameQuery);
-
-                        command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + indexQuery + ")  AND type='Protest' ORDER BY id DESC";
                     }
+                    else
+                    { 
+                        command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE targetIndex IN (" + protestQuery + ")  AND type='Protest' ORDER BY id DESC";
+                    }
+                    table = ConnectionManager.CreateQuery(command);
                 }
 
                 if (String.IsNullOrEmpty(nameQuery))
                 {
-                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND type='Follow' ORDER BY id DESC";
+                    command.Parameters.Clear();
+                    command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND type='Follow'";
                 }
                 else
                 {
+                    command.Parameters.Clear();
                     command.CommandText = "SELECT TOP 500 * FROM Notifications WHERE userIndex IN (" + indexQuery + ")  AND type='Follow' AND text LIKE '%' + @nameQuery + '%' ORDER BY id DESC";
                     command.Parameters.AddWithValue("@nameQuery", nameQuery);
                 }
-                DataTable table = ConnectionManager.CreateQuery(command);
+
+                table.Merge(ConnectionManager.CreateQuery(command));
 
                 if (table.Rows.Count <= 0)
                 {
@@ -117,8 +121,8 @@ namespace ProtestBackend.Controllers.Notifications
                 }
                 else
                 {
-                    NotificationModel[] users = table.Select().Select(s => new NotificationModel(s)).ToArray();
-                    string result = JsonConvert.SerializeObject(users);
+                    NotificationModel[] notifications = table.Select().Select(s => new NotificationModel(s)).ToArray();
+                    string result = JsonConvert.SerializeObject(notifications);
                     return Content(result);
                 }
             }

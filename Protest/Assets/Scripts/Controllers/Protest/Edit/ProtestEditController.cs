@@ -6,6 +6,7 @@ using DeadMosquito.AndroidGoodies;
 using DeadMosquito.IosGoodies;
 
 using ImageAndVideoPicker;
+using System.Linq;
 
 public class ProtestEditController : Controller
 {
@@ -39,17 +40,24 @@ public class ProtestEditController : Controller
     private Controller _returnController;
     public void Show(Controller returnController)
     {
+        imageChanged = false;
         model = new ProtestModel(0, "", "", "", "", "", "", "", 00f, 0.0f, null, null, null, null, Authentication.userIndex, 0.0f, 0.0f, true);
+        model.contributionModels = new ContributionsModel[0];
         creating = true;
+        returnController.Hide();
         _returnController = returnController;
         Show();
+        _view.Reset();
     }
 
     public void Show(int index, Controller returnController)
     {
+        imageChanged = false;
         SpinnerController.instance.Show();
         _returnController = returnController;
         DataParser.GetProtest(index, GetProtestCallback);
+        PopulateList();
+        _view.Reset();
     }
 
     void GetProtestCallback(ProtestModel model)
@@ -61,6 +69,7 @@ public class ProtestEditController : Controller
             DataParser.SetSprite(_view.iconImage, model.protestPicture);
         }
         _view.ChangeUI();
+        _returnController.Hide();
         creating = false;
         Show();
     }
@@ -74,14 +83,62 @@ public class ProtestEditController : Controller
             _returnController.Show();
     }
 
+    private bool imageChanged = false;
     public void Complete()
     {
         SpinnerController.instance.Show();
+        if (imageChanged)
+        {
+            Texture2D texture = new Texture2D(128, 128);
+            texture.SetPixels(_view.iconImage.sprite.texture.GetPixels((int)_view.iconImage.sprite.textureRect.x, (int)_view.iconImage.sprite.textureRect.y, (int)_view.iconImage.sprite.textureRect.width, (int)_view.iconImage.sprite.textureRect.height));
+            texture.Apply();
+            DataParser.UploadImage(texture, UploadImageCallback);
+        }
+        else
+        {
+            CompleteFinal();
+        }
+    }
 
+    public void UploadImageCallback(string url)
+    {
+        model.protestPicture = url;
+        CompleteFinal();
+    }
+
+    void AddContributionCreationCallback(ContributionsModel newContribution)
+    {
+        if (i >= model.contributionModels.Length)
+        {
+            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
+            return;
+        }
+        Debug.Log("Creating protest contribution: " + i + ". -----------------------------");
+        model.contributions = model.contributions.Union(new int[] { newContribution.index }).ToArray();
+        i++;
+        DataParser.CreateContribution(model.contributionModels[i], AddContributionCreationCallback);
+    }
+
+    int i = 0;
+    void CompleteCreate()
+    {
+        if(model.contributionModels.Length <= 0)
+            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
+        else
+        {
+            i = 0;
+            DataParser.CreateContribution(model.contributionModels[i], AddContributionCreationCallback);
+        }
+    }
+
+    public void CompleteFinal()
+    {
         if (!creating)
             DataParser.EditProtest(model, Authentication.auth_token, CompleteCallback);
         else
-            DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
+        {
+            CompleteCreate();
+        }
     }
 
     public void CompleteCallback(int protestIndex)
@@ -90,6 +147,7 @@ public class ProtestEditController : Controller
         SpinnerController.instance.Hide();
         Log.Create(2, "Complete Protest", "ProtestEditController");
         ProtestController.instance.Show(protestIndex, ProtestListController.instance);
+        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
         Hide();
     }
 
@@ -111,59 +169,141 @@ public class ProtestEditController : Controller
             if (creating == false)
                 DataParser.DeleteProtest(model.index);
 
-            Return();
+            ProtestController.instance.Hide();
+            ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
         }
     }
 
-    public void RemoveContribution(int index)
+    public void RemoveContribution(ContributionsModel model)
     {
-        DataParser.DeleteContribution(index);
-        int[] contributers = new int[this.model.contributions.Length - 1];
-        for (int i = 0; i < contributers.Length; i++)
-        {
-            if (contributers[i] != index)
-                contributers[i] = this.model.contributions[i];
-        }
-        this.model.contributions = contributers;
+        _model = model;
+        Popup.Create("Are you sure?", "Deleting this contribution will remove it forever, are you sure you want to delete it?", PopupCallback, "Popup", "Yes", "No");
+    }
+    private ContributionsModel _model;
 
-        PopulateList();
+    void PopupCallback(int response)
+    {
+        if(response == 1)
+        {
+            PoolManager.instance.SetPath(3);
+
+            if (creating)
+            {
+                this.model.contributionModels = this.model.contributionModels.Except(new ContributionsModel[] { _model }).ToArray();
+                DeleteContribution(_model, PoolManager.instance.currentSystem);
+            }
+            else
+            {
+                SpinnerController.instance.Show();
+                DataParser.DeleteContribution(_model.index, RemoveContributionCallback);
+            }
+        }
     }
 
+    public void RemoveContributionCallback(int model)
+    {
+        SpinnerController.instance.Hide();
+        PoolManager.instance.SetPath(3);
+        DeleteContribution(model, PoolManager.instance.currentSystem);
+    }
+
+    // -------------------------------------------------------------------------------------
+    public void DeleteContribution(ContributionsModel model, PoolSystem system)
+    {
+        for (int i = 0; i < system.poolObjects.Count; i++)
+        {
+            ContributionsListsObjectView x = system.poolObjects[i].GetComponent<ContributionsListsObjectView>();
+            if (x.model.name == model.name && x.model.currentAmount == model.currentAmount && x.model.amountNeeded == model.amountNeeded)
+            {
+                x.GetComponent<PoolObject>().Hide();
+                return;
+            }
+        }
+    }
+
+    public void DeleteContribution(int model, PoolSystem system)
+    {
+        for (int i = 0; i < system.poolObjects.Count; i++)
+        {
+            ContributionsListsObjectView x = system.poolObjects[i].GetComponent<ContributionsListsObjectView>();
+            if (x.model.index == model)
+            {
+                x.GetComponent<PoolObject>().Hide();
+                return;
+            }
+        }
+    }
+    // --------------------------------------------------------------------------------------
     public void CreateContribution(ContributionsModel model)
     {
         model.protest = this.model.index;
+        PoolManager.instance.SetPath(3);
 
-        model = DataParser.CreateContribution(model);
-        int[] contributers = new int[this.model.contributions.Length + 1];
-        for (int i = 0; i < contributers.Length - 1; i++)
+        if (this.model.contributionModels.Select(x => x.name == model.name).Any())
         {
-            contributers[i] = this.model.contributions[i];
+            Popup.Create("Duplicate", "There is already a contribution with the provided name", null, "Popup", "Okay");
+            return;
         }
-        contributers[contributers.Length - 1] = model.index;
-        this.model.contributions = contributers;
 
-        PopulateList();
+        if (String.IsNullOrEmpty(model.name.Trim()))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a name filled out!", null, "Popup", "Okay");
+            return;
+        }
+        if (model.amountNeeded <= 0)
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be an amount filled out!", null, "Popup", "Okay");
+            return;
+        }
+
+        if (creating)
+        {
+            this.model.contributionModels = this.model.contributionModels.Union(new ContributionsModel[] { model }).ToArray();
+            _obj = PoolManager.instance.Create(_view.listHolder);
+            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(model, RemoveContribution, true);
+        }
+        else
+        {
+            SpinnerController.instance.Show();
+            DataParser.CreateContribution(model, CreateContributionCallback);
+        } 
+    }
+
+    public void CreateContributionCallback(ContributionsModel newModel)
+    {
+        SpinnerController.instance.Hide();
+        PoolManager.instance.SetPath(3);
+        _obj = PoolManager.instance.Create(_view.listHolder);
+        _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(newModel, RemoveContribution, true);
     }
 
     private PoolObject _obj;
     public void PopulateList()
     {
-        if (model.contributions.Length <= 0)
-        {
+        if (creating)
             return;
-        }
+        if (model.contributions.Length <= 0)
+            return;
 
         Log.Create(1, "Populating List", "ProtestContributionsController");
 
+        DataParser.GetContributions(model.contributions, GetContributionsCallback);
+    }
+
+    void GetContributionsCallback(ContributionsModel[] models)
+    {
+        this.model.contributionModels = models;
         // Clear
         PoolManager.instance.SetPath(3);
         PoolManager.instance.Clear();
 
         // Populate List
-        for (int i = 0; i < model.contributions.Length; i++)
+        for (int i = 0; i < models.Length; i++)
         {
             _obj = PoolManager.instance.Create(_view.listHolder);
-            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(model.contributions[i], RemoveContribution, true);
+            _obj.GetComponent<ContributionsListsObjectView>().ChangeInfo(models[i], RemoveContribution, true);
         }
     }
 
@@ -177,15 +317,10 @@ public class ProtestEditController : Controller
 
     void GetIconCallback(Texture2D texture)
     {
+        imageChanged = true;
         Debug.Log("Got Texture");
-        texture.Resize(128, 128);
-        _view.iconImage.sprite = Sprite.Create(texture, new Rect(new Vector2(0, 0), new Vector2(128, 128)), new Vector2(0, 0));
-        DataParser.UploadImage(texture, UploadImageCallback);
-    }
-
-    public void UploadImageCallback(string url)
-    {
-        model.protestPicture = url;
+        TextureScale.Bilinear(texture, 128, 128);
+        _view.iconImage.sprite = Sprite.Create(texture, new Rect(0, 0, 128, 128), new Vector2(0, 0));
     }
 
     string _date;

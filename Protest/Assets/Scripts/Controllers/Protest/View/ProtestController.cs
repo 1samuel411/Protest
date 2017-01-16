@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DeadMosquito.AndroidGoodies;
 using DeadMosquito.IosGoodies;
+using System.Linq;
 
 public class ProtestController : Controller
 {
@@ -44,6 +45,7 @@ public class ProtestController : Controller
 
     public void Show(int protestModel, Controller previousController)
     {
+        _view.likesCountInt = 0;
         _previousController = previousController;
         previousController.Hide();
 
@@ -149,7 +151,7 @@ public class ProtestController : Controller
 
     void LikeCallback(bool liked)
     {
-        _view.likesCountInt = (liked) ? 1 : 0;
+        _view.likesCountInt += (liked) ? 1 : -1;
         SpinnerController.instance.Hide();
         _view.liked = liked;
     }

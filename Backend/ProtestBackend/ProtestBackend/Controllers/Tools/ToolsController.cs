@@ -9,6 +9,9 @@ using System.Drawing;
 using System.IO;
 using System.Drawing.Imaging;
 using ProtestBackend.Models;
+using System.Data.SqlClient;
+using System.Data;
+using ProtestBackend.DAL;
 
 namespace ProtestBackend.Controllers.Tools
 {
@@ -63,6 +66,37 @@ namespace ProtestBackend.Controllers.Tools
             }
         }
 
-        
+        // POST: Set Icon
+        public ActionResult UploadIcon()
+        {
+            #region Get Data
+            string sessionToken = Request.QueryString["sessionToken"];
+            if (String.IsNullOrEmpty(sessionToken))
+                sessionToken = Request.Form["sessionToken"];
+            #endregion
+
+            if (Request.Files.Count <= 0)
+            {
+                return Content("Invalid request");
+            }
+
+            if (String.IsNullOrEmpty(sessionToken))
+            {
+                return Content("Invalid request");
+            }
+
+            SqlCommand command = new SqlCommand("SELECT id FROM Users WHERE sessionToken=@sessionToken");
+            command.Parameters.AddWithValue("@sessionToken", sessionToken);
+
+            // Check that the user we are going to modify exists
+            DataTable user = ConnectionManager.CreateQuery(command);
+            if (user.Rows.Count <= 0)
+            {
+                return Content(Error.Create("SessionToken does not exist"));
+            }
+
+            string url = StorageManager.UploadToStorage(Request.Files[0], "icons");
+            return Content(SuccessUrl.Create("Successfully uploaded icon", url));
+        }
     }
 }

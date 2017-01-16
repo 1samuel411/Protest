@@ -9,6 +9,7 @@ using DeadMosquito.AndroidGoodies;
 using System.Linq;
 using Facebook.Unity;
 using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 /**
  * Purpose: Take a string data and convert it to a native Data.
@@ -24,6 +25,7 @@ public class DataParser : Base
     // Min   : 30
     // Sec   : 0
 
+    public const string TESTURL = "http://localhost:41264";
     public const string URL = "http://protestchange.azurewebsites.net";
 
     private static MonoBehaviour _behaviour;
@@ -44,33 +46,32 @@ public class DataParser : Base
         behaviour = this;
     }
 
+    public static bool IsValid(string emailaddress)
+    {
+        try
+        {
+            MailAddress m = new MailAddress(emailaddress);
+
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+
     #region Distance
-    public static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
-    {
-        double theta = lon1 - lon2;
-        double dist = Math.Sin(DegToRad(lat1)) * Math.Sin(RadToDeg(lat2)) +
-                      Math.Cos(DegToRad(lat1)) * Math.Cos(RadToDeg(lat2)) *
-                      Math.Cos(DegToRad(theta));
-        dist = Math.Acos(dist);
-        dist = RadToDeg(dist);
-        dist = dist * 60 * 1.1515;
-        return (dist);
-    }
+    public const double EarthRadiusInMiles = 3956.0;
+    public const double EarthRadiusInKilometers = 6367.0;
 
-    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    //::  This function converts decimal degrees to radians             :::
-    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    private static double DegToRad(double deg)
-    {
-        return (deg * Math.PI / 180.0);
-    }
+    public static double ToRadian(double val) { return val * (Math.PI / 180); }
+    public static double DiffRadian(double val1, double val2) { return ToRadian(val2) - ToRadian(val1); }
 
-    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    //::  This function converts radians to decimal degrees             :::
-    //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-    private static double RadToDeg(double rad)
+    public static double CalcDistance(double lat1, double lng1, double lat2, double lng2)
     {
-        return (rad / Math.PI * 180.0);
+        double radius = EarthRadiusInMiles;
+
+        return radius * 2 * Math.Asin(Math.Min(1, Math.Sqrt((Math.Pow(Math.Sin((DiffRadian(lat1, lat2)) / 2.0), 2.0) + Math.Cos(ToRadian(lat1)) * Math.Cos(ToRadian(lat2)) * Math.Pow(Math.Sin((DiffRadian(lng1, lng2)) / 2.0), 2.0)))));
     }
     #endregion
 
@@ -229,6 +230,40 @@ public class DataParser : Base
     #endregion
 
     #region Images
+    public static void UploadImage(Texture2D image, Action<string> Callback)
+    {
+        behaviour.StartCoroutine(UploadImageCoroutine(image, Callback));
+    }
+
+    public static IEnumerator UploadImageCoroutine(Texture2D image, Action<string> Callback)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", Authentication.auth_token);
+        byte[] bytes = image.EncodeToPNG();
+        form.AddBinaryData("image", bytes);
+
+        WWW www = new WWW(URL + "/Tools/UploadIcon", form);
+
+        yield return www;
+
+        if(!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+        if(jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error").str);
+            yield break;
+        }
+
+        string url = jsonObj.GetField("url").str;
+        Debug.Log("Uploaded image to the url: " + url);
+        Callback(url);
+    }
+
     public static Action<Texture2D> GetIconCallback;
     public static void ChangeIcon(Action<Texture2D> Callback)
     {
@@ -270,12 +305,7 @@ public class DataParser : Base
 
         Debug.Log("Error: No texture found!");
     }
-
-    public static string UploadImage(Texture2D image, Action<string> Callback)
-    {
-        return "";
-    }
-
+    
     public static void SetSprite(Image image, string url, int size = 128)
     {
         behaviour.StartCoroutine(GetSpriteLoader(image, url, size));
@@ -635,8 +665,7 @@ public class DataParser : Base
         }
         if (!String.IsNullOrEmpty(model.donationsEmail.Trim()))
         {
-            string check = "^(?(\")(\".+?(?<!\\)\"@)| (([0 - 9a - z]((\\.(? !\\.)) |[-!#\\$%&'\\*\\+/=\\?\\^`\\{\\}\\|~\\w])*)(?<=[0-9a-z])@))(?(\\[)(\\[(\\d{1,3}\\.){3}\\d{1,3}\\])|(([0-9a-z][-\\w]*[0-9a-z]*\\.)+[a-z0-9][\\-a-z0-9]{0,22}[a-z0-9]))$";
-            if (!Regex.IsMatch(model.donationsEmail, check))
+            if (!IsValid(model.donationsEmail))
             {
                 SpinnerController.instance.Hide();
                 Popup.Create("Invalid", "Email is not entered correctly, double check because this is where funds will be sent!", null);
@@ -665,7 +694,7 @@ public class DataParser : Base
         form.AddField("longitude", model.y.ToString());
         form.AddField("date", model.date);
         form.AddField("donationsEmail", model.donationsEmail);
-        form.AddField("donationTarget", model.donationTarget.ToString());
+        form.AddField("donationsTarget", model.donationTarget.ToString());
         form.AddField("sessionToken", token);
         WWW www = new WWW(URL + "/Protest/Create", form);
 
@@ -919,39 +948,155 @@ public class DataParser : Base
     #endregion
 
     #region Contributions
-    public static void AddContribution(int id)
-    {
 
+    public static void AddContribution(int model, Action Callback)
+    {
+        behaviour.StartCoroutine(AddContributionCoroutine(model, Callback));
     }
 
-    public static void RemoveContribution(int id)
+    private static IEnumerator AddContributionCoroutine(int model, Action Callback)
     {
+        Debug.Log("Adding Contributions: " + model);
+        WWWForm form = new WWWForm();
+        form.AddField("index", model);
+        form.AddField("sessionToken", Authentication.auth_token);
+        WWW www = new WWW(URL + "/Contributions/Add", form);
 
-    }
+        yield return www;
 
-    public static ContributionsModel CreateContribution(ContributionsModel model)
-    {
-        return model;
-    }
-
-    public static void DeleteContribution(int index)
-    {
-
-    }
-
-    public static ContributionsModel[] GetContributions(int[] contributions)
-    {
-        ContributionsModel[] models = new ContributionsModel[contributions.Length];
-        for (int i = 0; i < models.Length; i++)
+        if (!String.IsNullOrEmpty(www.error))
         {
-            models[i] = FindContribution(contributions[i]);
+            Debug.Log("Error: " + www.error);
+            yield break;
         }
-        return models;
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            yield break;
+        }
+        Callback();
     }
 
-    public static ContributionsModel FindContribution(int index)
+    public static void CreateContribution(ContributionsModel model, Action<ContributionsModel> Callback)
     {
-        return new ContributionsModel(0, "Needs", 5, 2, 0);
+        behaviour.StartCoroutine(CreateContributionCoroutine(model, Callback));
+    }
+
+    private static IEnumerator CreateContributionCoroutine(ContributionsModel model, Action<ContributionsModel> Callback)
+    {
+        if (String.IsNullOrEmpty(model.name.Trim()))
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be a name filled out!", null);
+            yield break;
+        }
+        if (model.amountNeeded <= 0)
+        {
+            SpinnerController.instance.Hide();
+            Popup.Create("Invalid", "There must be an amount filled out!", null);
+            yield break;
+        }
+
+        Debug.Log("Creating Contributions: " + model.name);
+        WWWForm form = new WWWForm();
+        form.AddField("name", model.name);
+        form.AddField("amountNeeded", model.amountNeeded);
+        form.AddField("protest", model.protest);
+        form.AddField("sessionToken", Authentication.auth_token);
+        WWW www = new WWW(URL + "/Contributions/Create", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            yield break;
+        }
+        model.index = (int)jsonObj.GetField("index").n;
+        Callback(model);
+    }
+
+    public static void DeleteContribution(int index, Action<int> Callback)
+    {
+        behaviour.StartCoroutine(DeleteContributionCoroutine(index, Callback));
+    }
+
+    private static IEnumerator DeleteContributionCoroutine(int index, Action<int> Callback)
+    {
+        Debug.Log("Deleting Contributions: " + index);
+        WWWForm form = new WWWForm();
+        form.AddField("index", index);
+        form.AddField("sessionToken", Authentication.auth_token);
+        WWW www = new WWW(URL + "/Contributions/Delete", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            yield break;
+        }
+
+        Callback(index);
+    }
+
+    public static void GetContributions(int[] contributions, Action<ContributionsModel[]> Callback)
+    {
+        behaviour.StartCoroutine(GetContributionsCoroutine(contributions, Callback));
+    }
+
+    private static IEnumerator GetContributionsCoroutine(int[] indexes, Action<ContributionsModel[]> Callback)
+    {
+        Debug.Log("Gettings Contributions: " + indexes);
+        WWWForm form = new WWWForm();
+        form.AddField("index", DataParser.ParseIntArrayToString(indexes));
+        WWW www = new WWW(URL + "/Contributions/FindContributions", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            SpinnerController.instance.Hide();
+            yield break;
+        }
+
+        List<ContributionsModel> models = new List<ContributionsModel>();
+        for (int i = 0; i < jsonObj.list.Count; i++)
+        {
+            models.Add(new ContributionsModel(jsonObj.list[i]));
+        }
+        Callback(models.ToArray());
     }
     #endregion
 
