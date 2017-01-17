@@ -57,7 +57,7 @@ public class SearchController : Controller
     public void Return()
     {
         SpinnerController.instance.Show();
-        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
+        ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, null);
         Hide();
     }
 

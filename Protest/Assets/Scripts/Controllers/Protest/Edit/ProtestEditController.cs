@@ -32,14 +32,14 @@ public class ProtestEditController : Controller
 
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            ProtestListController.instance.Show();
-            Hide();
+            Return();
         }
     }
 
     private Controller _returnController;
     public void Show(Controller returnController)
     {
+        _view.Reset();
         imageChanged = false;
         model = new ProtestModel(0, "", "", "", "", "", "", "", 00f, 0.0f, null, null, null, null, Authentication.userIndex, 0.0f, 0.0f, true);
         model.contributionModels = new ContributionsModel[0];
@@ -47,7 +47,6 @@ public class ProtestEditController : Controller
         returnController.Hide();
         _returnController = returnController;
         Show();
-        _view.Reset();
     }
 
     public void Show(int index, Controller returnController)
@@ -56,12 +55,11 @@ public class ProtestEditController : Controller
         SpinnerController.instance.Show();
         _returnController = returnController;
         DataParser.GetProtest(index, GetProtestCallback);
-        PopulateList();
-        _view.Reset();
     }
 
     void GetProtestCallback(ProtestModel model)
     {
+        _view.Reset();
         SpinnerController.instance.Hide();
         this.model = model;
         if (!String.IsNullOrEmpty(model.protestPicture))
@@ -71,6 +69,7 @@ public class ProtestEditController : Controller
         _view.ChangeUI();
         _returnController.Hide();
         creating = false;
+        PopulateList();
         Show();
     }
 
@@ -137,7 +136,7 @@ public class ProtestEditController : Controller
         SpinnerController.instance.Hide();
         Log.Create(2, "Complete Protest", "ProtestEditController");
         ProtestController.instance.Show(model.index, ProtestListController.instance);
-        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
+        ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, null);
         Hide();
         return;
     }
@@ -145,7 +144,7 @@ public class ProtestEditController : Controller
     public void CompleteFinal()
     {
         if (!creating)
-            DataParser.EditProtest(model, Authentication.auth_token, CompleteCallback);
+            DataParser.EditProtest(model, Authentication.auth_token, CompleteCallbackUpdate);
         else
         {
             DataParser.CreateProtest(model, Authentication.auth_token, CompleteCallback);
@@ -156,6 +155,12 @@ public class ProtestEditController : Controller
     {
         model.index = protestIndex;
         CompleteCreate();
+    }
+
+    void CompleteCallbackUpdate(int protestIndex)
+    {
+        ProtestController.instance.Show(protestIndex, ProtestListController.instance);
+        Hide();
     }
 
     public void Delete()
@@ -177,7 +182,7 @@ public class ProtestEditController : Controller
                 DataParser.DeleteProtest(model.index);
 
             ProtestController.instance.Hide();
-            ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
+            ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, null);
         }
     }
 
@@ -401,7 +406,6 @@ public class ProtestEditController : Controller
         var date = DataParser.ParseDate(_date);
         var picked = new DateTime(date.Year, date.Month, date.Day, hourOfDay, minute, 00);
         model.date = DataParser.UnparseDate(picked);
-
     }
 
     private void OnTimePickCancel()

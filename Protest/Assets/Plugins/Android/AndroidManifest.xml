@@ -41,14 +41,13 @@
   <!-- To open bluetooth settings on some devices -->
   <!-- For GPS coordinates -->
   <!-- Flashlight -->
-  <uses-permission android:name="android.permission.CAMERA" />
   <uses-feature android:name="android.hardware.camera" />
-  <uses-permission android:name="android.permission.FLASHLIGHT" />
   <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
   <!-- For testing runtime permissions -->
   <uses-permission android:name="android.permission.READ_CALENDAR" />
   <!-- END ANDROID GOODIES TEST APP PERMISSIONS -->
   <!-- For GPS coordinates -->
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <!-- Needed only if your app targets Android 5.0 (API level 21) or higher. -->
   <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
   <uses-feature android:name="android.hardware.touchscreen.multitouch" android:required="false" />

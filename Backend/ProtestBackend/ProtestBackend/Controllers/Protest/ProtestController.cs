@@ -149,11 +149,11 @@ namespace ProtestBackend.Controllers.Protest
             }
             NotificationManager.CreateNotification(userIndex, indexCreated, userProfilePicture, userName + " created a new Protest, " + name, NotificationManager.Type.Protest);
 
-            SqlCommand commandCreate = new SqlCommand("INSERT INTO Going (userId, protestId, time) VALUES ( @user, @protest,@time)");
-            command.Parameters.AddWithValue("@user", userIndex);
-            command.Parameters.AddWithValue("@protest", indexCreated);
-            command.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
-            ConnectionManager.CreateCommand(command);
+            SqlCommand commandCreate = new SqlCommand("INSERT INTO Going (userId, protestId, time) VALUES (@user, @protest, @time)");
+            commandCreate.Parameters.AddWithValue("@user", userIndex);
+            commandCreate.Parameters.AddWithValue("@protest", indexCreated);
+            commandCreate.Parameters.AddWithValue("@time", Parser.UnparseDate(DateTime.UtcNow));
+            ConnectionManager.CreateCommand(commandCreate);
 
             return Content(SuccessCreation.Create("Successfully created protest", indexCreated));
         }

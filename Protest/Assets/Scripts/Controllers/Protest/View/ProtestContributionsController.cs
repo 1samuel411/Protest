@@ -71,5 +71,7 @@ public class ProtestContributionsController : Controller
             return;
 
         Log.Create(2, "Opening Paypal checkout", "ProtestContributionsController");
+
+        Popup.Create("In Development", "Currently Paypal checkout has yet to be implemented, please give us some time. Thank you.", null, "Popup", "Okay");
     }
 }

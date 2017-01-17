@@ -29,9 +29,11 @@ public class ProtestInfoView : View
 
         userButton.gameObject.SetActive(!ProtestController.instance.ourProtest);
         userButton.onClick.RemoveAllListeners();
-        userButton.onClick.AddListener(() => { ProfileViewController.instance.Show(model.userCreated, ProtestController.instance); ProtestController.instance.Hide(); ProfileViewController.instance.Show(); });
+        userButton.onClick.AddListener(() => { ProfileViewController.instance.Show(model.userCreated, ProtestController.instance); });
+
         editButton.gameObject.SetActive(ProtestController.instance.ourProtest);
-        editButton.onClick.AddListener(() => { ProtestEditController.instance.Show(model.index, ProtestController.instance); ProtestController.instance.Hide(); });
+        editButton.onClick.RemoveAllListeners();
+        editButton.onClick.AddListener(() => { ProtestEditController.instance.Show(model.index, ProtestController.instance); });
 
         DataParser.SetSprite(protestImage, model.protestPicture);
 
@@ -48,7 +50,8 @@ public class ProtestInfoView : View
         }
         else
             dateText.text = "Set Date";
-        bodyText.text = model.description;
+
+        bodyText.text = model.description.Replace("\\n", "\n");
 
         if (!model.active)
         {

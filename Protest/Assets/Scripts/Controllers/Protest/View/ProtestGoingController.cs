@@ -168,6 +168,6 @@ public class ProtestGoingController : Controller
     public void SelectUser(int user)
     {
         Log.Create(1, "Pressed User", "ProtestGoingController");
-        ProfileViewController.instance.Show(user, this);
+        ProfileViewController.instance.Show(user, ProtestController.instance);
     }
 }

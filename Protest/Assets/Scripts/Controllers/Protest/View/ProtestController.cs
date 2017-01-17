@@ -10,7 +10,6 @@ public class ProtestController : Controller
 
     private ProtestView _view;
     public static new ProtestController instance;
-    [HideInInspector]
     public bool ourProtest;
 
     void Awake()

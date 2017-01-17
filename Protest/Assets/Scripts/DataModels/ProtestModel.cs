@@ -97,6 +97,9 @@ public class ProtestModel : Model
         if (!string.IsNullOrEmpty(description))
             description = description.Replace(@"\t", "");
 
+        donationTarget = (int)(jsonObj.GetField("donationTarget").n);
+        donationCurrent = (int)(jsonObj.GetField("donationCurrent").n);
+
         going = new int[0];
         likes = new int[0];
         contributions = new int[0];

@@ -745,8 +745,7 @@ public class DataParser : Base
         }
         if (!String.IsNullOrEmpty(model.donationsEmail.Trim()))
         {
-            string check = "^(?(\")(\".+?(?<!\\)\"@)| (([0 - 9a - z]((\\.(? !\\.)) |[-!#\\$%&'\\*\\+/=\\?\\^`\\{\\}\\|~\\w])*)(?<=[0-9a-z])@))(?(\\[)(\\[(\\d{1,3}\\.){3}\\d{1,3}\\])|(([0-9a-z][-\\w]*[0-9a-z]*\\.)+[a-z0-9][\\-a-z0-9]{0,22}[a-z0-9]))$";
-            if (!Regex.IsMatch(model.donationsEmail, check))
+            if (!IsValid(model.donationsEmail))
             {
                 SpinnerController.instance.Hide();
                 Popup.Create("Invalid", "Email is not entered correctly, double check because this is where funds will be sent!", null);
@@ -776,7 +775,7 @@ public class DataParser : Base
         form.AddField("longitude", model.y.ToString());
         form.AddField("date", model.date);
         form.AddField("donationsEmail", model.donationsEmail);
-        form.AddField("donationTarget", model.donationTarget.ToString());
+        form.AddField("donationsTarget", model.donationTarget.ToString());
         form.AddField("sessionToken", token);
         WWW www = new WWW(URL + "/Protest/Update", form);
 

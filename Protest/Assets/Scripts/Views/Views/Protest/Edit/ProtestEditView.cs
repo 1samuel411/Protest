@@ -132,7 +132,7 @@ public class ProtestEditView : View
         else
         {
             System.DateTime newTime = DataParser.ParseDate(ProtestEditController.instance.model.date);
-            dateText.text = newTime.ToShortDateString() + "\n" + newTime.ToShortTimeString();
+            dateText.text = newTime.DayOfWeek + ", " + newTime.ToShortDateString() + "\n" + newTime.ToString("hh:mm tt");
         }
 
         if (ProtestEditController.instance.model.location == "")
@@ -148,7 +148,7 @@ public class ProtestEditView : View
     public void ChangeUI()
     {
         nameInput.text = ProtestEditController.instance.model.name;
-        bodyInput.text = ProtestEditController.instance.model.description;
+        bodyInput.text = ProtestEditController.instance.model.description.Replace("\\n", "\n");
         paypalEmailInput.text = ProtestEditController.instance.model.donationsEmail;
         donationsGoalInput.text = ProtestEditController.instance.model.donationTarget.ToString();
         locationInput.text = ProtestEditController.instance.model.location;
@@ -156,12 +156,20 @@ public class ProtestEditView : View
 
     public void Reset()
     {
+        // Clear
+        PoolManager.instance.SetPath(3);
+        PoolManager.instance.Clear();
+
+        curIndex = 1;
+
         iconImage.sprite = null;
         nameInput.text = "";
         bodyInput.text = "";
         paypalEmailInput.text = "";
         donationsGoalInput.text = "";
         locationInput.text = "";
+        contributionNameInput.text = "";
+        contributionAmountInput.text = "";
     }
 
     public void SetSelection(int index)

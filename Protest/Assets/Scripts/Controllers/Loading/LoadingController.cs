@@ -4,6 +4,9 @@ using UnityEngine;
 using Facebook.Unity;
 using System.Linq;
 using System;
+#if UNITY_ANDROID
+using DeadMosquito.AndroidGoodies;
+#endif
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -61,8 +64,13 @@ public class LoadingController : Controller
 
     public void LoginGoogle()
     {
-        //Authentication.Login_Google(LoginCallback);
+        //Authentication.Login_Google(CallbackGoogle);
         Popup.Create("Not supported", "Google login is still being developed and will be released soon!", null, "Popup", "Okay");
+    }
+
+    private void CallbackGoogle()
+    {
+
     }
 
     private void CallbackFacebook(ILoginResult result)
@@ -101,49 +109,32 @@ public class LoadingController : Controller
     {
         Authentication.RefreshUserModel(null);
         _View.loading = true;
-        StartCoroutine(LoadCoroutine());
+        GetLocation();
     }
 
-    IEnumerator LoadCoroutine()
+    void GetLocation()
     {
         Debug.Log("Getting coordinates!");
-        Input.location.Start(600f);
-
-        // Wait until service initializes
-        int maxWait = 15;
-        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
-        {
-            yield return new WaitForSeconds(1);
-            maxWait--;
-        }
-
-        // Service didn't initialize in 20 seconds
-        if (maxWait < 1)
-        {
-            Popup.Create("Location Services", "Your location retrieval process timed out!", null);
-            Debug.Log("Timed out");
-            Authentication.Logout();
-            yield break;
-        }
-
-        // Connection has failed
-        if (Input.location.status == LocationServiceStatus.Failed)
-        {
-            Debug.Log("Unable to determine device location");
-            Popup.Create("Location Services", "Retrieving your location failed. Location services are used to find Protests closest to you, please re-enable access to continue. (We value your privacy so, locations are NEVER stored, and are retrieved with an accuracy of 600 meters upon logging in to ensure your security)", null);
-            Authentication.Logout();
-            yield break;
-        }
-        else
-        {
-            // Access granted and location value could be retrieved
-            Debug.Log("Our location is: " + Input.location.lastData.latitude + ", " + Input.location.lastData.longitude);
-            ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, LoadCallback);
-        }
-
-        // Stop service if there is no need to query location updates continuously
-        Input.location.Stop();
+#if UNITY_ANDROID
+        OnStartTrackingLocation();
+#endif
     }
+
+#if UNITY_ANDROID
+    public void OnStartTrackingLocation()
+    {
+        AGGPS.RequestLocationUpdates(100, 600, OnLocationChanged);
+    }
+
+    private void OnLocationChanged(AGGPS.Location location)
+    {
+        Debug.Log("Our location is: " + location.Latitude + ", " + location.Longitude);
+        Authentication.location.x = (float)location.Latitude;
+        Authentication.location.y = (float)location.Longitude;
+        ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, LoadCallback);
+        AGGPS.RemoveUpdates();
+    }
+#endif
 
     public void LoadCallback(int response)
     {

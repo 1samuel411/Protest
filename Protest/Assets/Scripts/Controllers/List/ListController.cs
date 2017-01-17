@@ -137,7 +137,7 @@ public class ListController : Controller
         Debug.Log("Returning to: " + previousController.name);
         Hide();
         SpinnerController.instance.Show();
-        ProtestListController.instance.Load(Input.location.lastData.latitude, Input.location.lastData.longitude, null);
+        ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, null);
     }
 
     public void PageBack()

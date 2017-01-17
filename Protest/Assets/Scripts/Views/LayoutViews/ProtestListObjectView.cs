@@ -44,6 +44,6 @@ public class ProtestListObjectView : View
         selectButton.onClick.RemoveAllListeners();
         selectButton.onClick.AddListener(() => { callback(protestToDisplay.index); });
 
-        distanceText.text = Math.Round(DataParser.CalcDistance(Input.location.lastData.latitude, Input.location.lastData.longitude, newModel.x, newModel.y), 1).ToString() + " miles";
+        distanceText.text = Math.Round(DataParser.CalcDistance(Authentication.location.x, Authentication.location.y, newModel.x, newModel.y), 1).ToString() + " miles";
     }
 }

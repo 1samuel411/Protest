@@ -13,6 +13,8 @@ public class Authentication : Base
 
     public static bool authenticated;
 
+    public static Vector2 location = new Vector2(0, 0);
+
     private bool completeFB;
     private bool completeGoogle = false;
 
@@ -121,13 +123,11 @@ public class Authentication : Base
         FB.LogInWithReadPermissions(permissions, CallbackFacebook);
     }
     
-    public static void Login_Google(Action<int> callback)
+    public static void Login_Google(Action callback)
     {
-        int response = 0;
+        Log.Create(0, "Login to google event", "Authentication");
         // Login to google and return the key to call the authenticate method
-
-
-        callback.Invoke(response);
+        
     }
 
     public enum LoginType {  Google, Facebook  };
