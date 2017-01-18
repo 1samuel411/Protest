@@ -6,19 +6,31 @@ public class ChatModel : Model
 {
 
     public int index;
-
     public string body;
+    public int user;
+    public string name;
+    public string time;
+    public int protest;
 
-    public int userPosted;
+    public string picture;
 
-    public string datePosted;
-
-    public ChatModel(int index, string body, int userPosted, string datePosted)
+    public ChatModel(JSONObject jsonObj)
     {
-        this.body = body;
+        if (jsonObj.HasField("id") == false)
+        {
+            return;
+        }
+        index = int.Parse(jsonObj.GetField("id").ToString());
 
-        this.userPosted = userPosted;
+        body = jsonObj.GetField("body").str;
 
-        this.datePosted = datePosted;
+        user = (int)jsonObj.GetField("user").n;
+        name = jsonObj.GetField("name").str;
+        protest = (int)jsonObj.GetField("protest").n;
+
+        time = jsonObj.GetField("time").str;
+
+        if (jsonObj.HasField("picture"))
+            picture = jsonObj.GetField("picture").str;
     }
 }

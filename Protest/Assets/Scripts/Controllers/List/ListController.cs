@@ -94,9 +94,7 @@ public class ListController : Controller
             if (model.following.Length <= 0)
                 Return();
 
-            int[] us = new int[1];
-            us[0] = Authentication.userIndex;
-            DataParser.GetNews(model.following.Union(us).ToArray(), model.protestsCreated.Union(model.protestsAttended).ToArray(), searchString, GetNewsCallback);
+            DataParser.GetNews(model.following.ToArray(), model.protestsCreated.Union(model.protestsAttended).ToArray(), searchString, GetNewsCallback);
         }
         else
         {

@@ -25,20 +25,19 @@ public class ChatListsObjectView : View
 
     public void ChangeInfo(ChatModel model)
     {
-        bool ours = model.userPosted == Authentication.userIndex;
+        bool ours = model.user == Authentication.userIndex;
 
         identifierOursTransform.gameObject.SetActive(ours);
         identifierTransform.gameObject.SetActive(!ours);
         bgImage.color = (ours) ? ourColor : otherColor;
 
-        dateText.text = (DataParser.ParseDate(model.datePosted)).ToShortDateString() + (DataParser.ParseDate(model.datePosted)).ToShortTimeString();
+        dateText.text = (DataParser.ParseDate(model.time)).ToShortDateString() + " " + (DataParser.ParseDate(model.time)).ToShortTimeString();
 
-        UserModel userModel = DataParser.GetUser(model.userPosted);
-        nameText.text = userModel.name;
+        nameText.text = model.name;
 
         if(!ours)
         {
-            DataParser.SetSprite(iconImage, userModel.name);
+            DataParser.SetSprite(iconImage, model.picture);
         }
 
         imageHolder.gameObject.SetActive(!ours);
@@ -55,5 +54,7 @@ public class ChatListsObjectView : View
         PoolManager.instance.SetPath(5);
         PoolObject _obj = PoolManager.instance.Create(listHolder);
         _obj.GetComponent<BodyObjectView>().ChangeInfo(body);
+        if(ProtestChatController.instance.firstRun)
+            _obj.transform.SetAsFirstSibling();
     }
 }

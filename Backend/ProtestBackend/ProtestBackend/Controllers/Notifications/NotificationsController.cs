@@ -137,9 +137,9 @@ namespace ProtestBackend.Controllers.Notifications
             if (String.IsNullOrEmpty(indexQuery))
                 indexQuery = Request.Form["index"];
 
-            string protestQuery = Request.QueryString["protestIndex "];
+            string protestQuery = Request.QueryString["protestIndex"];
             if (String.IsNullOrEmpty(protestQuery))
-                protestQuery = Request.Form["protestIndex "];
+                protestQuery = Request.Form["protestIndex"];
 
             if (!String.IsNullOrEmpty(indexQuery) && Regex.IsMatch(indexQuery, @"^([0-9]+,?)+$"))
             {
@@ -153,14 +153,7 @@ namespace ProtestBackend.Controllers.Notifications
                 }
                 command.CommandText = "SELECT COUNT(*) FROM Notifications WHERE userIndex IN (" + indexQuery + ") AND type='Follow'";
                 int response = ConnectionManager.CreateScalar(command);
-                if (response <= 0)
-                {
-                    return Content(Error.Create("Index does not exist"));
-                }
-                else
-                {
-                    return Content(SuccessCreation.Create("Successfully got the count", response + protests));
-                }
+                return Content(SuccessCreation.Create("Successfully got the count", response + protests));
             }
             return Content(Error.Create("Invalid request"));
         }

@@ -181,6 +181,7 @@
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Chat\ChatController.cs" />
     <Compile Include="Controllers\Contributions\ContributionsController.cs" />
     <Compile Include="Controllers\Locations\LocationController.cs" />
     <Compile Include="Controllers\Notifications\NotificationsController.cs" />
@@ -196,6 +197,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ChatModel.cs" />
     <Compile Include="Models\DeviceRegistration.cs" />
     <Compile Include="Models\Error.cs" />
     <Compile Include="Models\NotificationModel.cs" />
@@ -225,6 +227,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Chat\" />
     <Folder Include="Views\Contributions\" />
     <Folder Include="Views\Default\" />
     <Folder Include="Views\Location\" />

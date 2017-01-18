@@ -72,4 +72,9 @@ public class ProtestInfoView : View
     {
         ProtestInfoController.instance.ViewProtestImage();
     }
+
+    public void AddToCalender()
+    {
+        ProtestInfoController.instance.AddToCalender();
+    }
 }

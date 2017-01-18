@@ -67,12 +67,14 @@ public class ProtestController : Controller
         ProtestGoingController.instance.PopulateFromServer();
         ProtestContributionsController.instance.PopulateFromServer();
         ProtestChatController.instance.PopulateFromServer();
+        ProtestChatController.instance.ready = true;
     }
 
     private Controller _previousController;
     public void Return()
     {
         Hide();
+        ProtestChatController.instance.ready = false;
         _previousController.Show();
     }
 
@@ -114,23 +116,6 @@ public class ProtestController : Controller
 
     public void GoingCallback(bool going)
     {
-        if(going)
-        {
-#if UNITY_ANDROID
-            var beginTime = DataParser.ParseDate(_view.protestModel.date);
-            var endTime = beginTime.AddHours(2);
-            var eventBuilder = new AGCalendar.EventBuilder(_view.protestModel.name, beginTime);
-            eventBuilder.SetEndTime(endTime);
-            eventBuilder.SetIsAllDay(false);
-            eventBuilder.SetLocation(_view.protestModel.location);
-            eventBuilder.SetAccessLevel(AGCalendar.EventAccessLevel.Public);
-            eventBuilder.SetAvailability(AGCalendar.EventAvailability.Free);
-            eventBuilder.BuildAndShow();
-#endif
-#if UNITY_IOS
-
-#endif
-        }
         SpinnerController.instance.Hide();
         _view.going = going;
 
@@ -163,5 +148,23 @@ public class ProtestController : Controller
                 return true;
         }
         return false;
+    }
+
+    public void AddToCalender()
+    {
+#if UNITY_ANDROID
+        var beginTime = DataParser.ParseDate(_view.protestModel.date);
+        var endTime = beginTime.AddHours(2);
+        var eventBuilder = new AGCalendar.EventBuilder(_view.protestModel.name, beginTime);
+        eventBuilder.SetEndTime(endTime);
+        eventBuilder.SetIsAllDay(false);
+        eventBuilder.SetLocation(_view.protestModel.location);
+        eventBuilder.SetAccessLevel(AGCalendar.EventAccessLevel.Public);
+        eventBuilder.SetAvailability(AGCalendar.EventAvailability.Free);
+        eventBuilder.BuildAndShow();
+#endif
+#if UNITY_IOS
+
+#endif
     }
 }

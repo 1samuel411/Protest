@@ -22,6 +22,10 @@ public class ProtestView : View
                 return;
             _selection = value;
             ChangeUI();
+            contributionsButton.image.color = defaultColor;
+            goingButton.image.color = defaultColor;
+            infoButton.image.color = defaultColor;
+            chatButton.image.color = defaultColor;
             switch (_selection)
             {
                 case SelectionOptions.Contributions:
@@ -122,11 +126,6 @@ public class ProtestView : View
     {
         if (protestModel == null)
             return;
-
-        contributionsButton.image.color = defaultColor;
-        goingButton.image.color = defaultColor;
-        infoButton.image.color = defaultColor;
-        chatButton.image.color = defaultColor;
         
         int curIndex = (int)selection;
 

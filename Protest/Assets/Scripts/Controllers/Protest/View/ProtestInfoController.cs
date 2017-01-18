@@ -72,4 +72,9 @@ public class ProtestInfoController : Controller
     {
         ImageViewController.instance.Show(_view.protestImage.sprite, this);
     }
+
+    public void AddToCalender()
+    {
+        ProtestController.instance.AddToCalender();
+    }
 }

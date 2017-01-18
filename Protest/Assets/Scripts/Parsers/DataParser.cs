@@ -461,22 +461,6 @@ public class DataParser : Base
         }
     }
 
-    public static UserModel GetUser(int id)
-    {
-        UserModel userModel = new UserModel(id, "", "", "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], new int[5], new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
-        int[] goingUsers = new int[1];
-        goingUsers[0] = 1;
-        return userModel;
-    }
-
-    public static UserModel GetUser(string token)
-    {
-        UserModel userModel = new UserModel(0, token, "", "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], null, new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
-        UserModel[] goingUsers = new UserModel[1];
-        goingUsers[0] = new UserModel(0, token, "", "", "http://orig04.deviantart.net/a222/f/2013/016/9/0/128x128_px_mario_by_wildgica-d5rpb6y.jpg", "email.com", "Samuel Arminana", "I am awesome as hell. This can't go longer than 135 characters", new int[6], null, new int[20], new int[5], "hello", "hello", "hello", "hello", false, false, true);
-        return userModel;
-    }
-
     public static void GetUsers(int[] users, string searchString, Action<UserModel[]> Callback)
     {
         behaviour.StartCoroutine(GetUsersCoroutine(users, searchString, Callback));
@@ -1100,20 +1084,76 @@ public class DataParser : Base
     #endregion
 
     #region Chats
-    public static ChatModel[] GetChats(int[] chats)
+    public static void GetChats(int protest, Action<ChatModel[]> Callback)
     {
-        ChatModel[] models = new ChatModel[chats.Length];
-        for (int i = 0; i < models.Length; i++)
-        {
-            models[i] = FindChat(chats[i]);
-        }
-        return models;
+        behaviour.StartCoroutine(GetChatsCoroutine(protest, Callback));
     }
 
-    public static ChatModel FindChat(int chat)
+    private static IEnumerator GetChatsCoroutine(int protest, Action<ChatModel[]> Callback)
     {
-        ChatModel model = new ChatModel(0, "Hello", 0, "16.4.4.1.30.0");
-        return model;
+        Debug.Log("Getting chats for protest: " + protest);
+        WWWForm form = new WWWForm();
+        form.AddField("protest", protest);
+
+        WWW www = new WWW(URL + "/Chat/Find", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+
+        List<ChatModel> chatModels = new List<ChatModel>();
+        for (int i = 0; i < jsonObj.list.Count; i++)
+        {
+            chatModels.Add(new ChatModel(jsonObj.list[i]));
+        }
+
+        Callback(chatModels.ToArray());
+    }
+
+    public static void SendChat(int protest, string body, Action Callback)
+    {
+        behaviour.StartCoroutine(SendChatCoroutine(protest, body, Callback));
+    }
+
+    private static IEnumerator SendChatCoroutine(int protest, string body, Action Callback)
+    {
+        Debug.Log("Sending chat: " + body);
+        WWWForm form = new WWWForm();
+        form.AddField("sessionToken", Authentication.auth_token);
+        form.AddField("body", body);
+        form.AddField("protest", protest);
+
+        WWW www = new WWW(URL + "/Chat/Create", form);
+
+        yield return www;
+
+        if (!String.IsNullOrEmpty(www.error))
+        {
+            Debug.Log("Error: " + www.error);
+            yield break;
+        }
+
+        JSONObject jsonObj = new JSONObject(www.text);
+
+        if (jsonObj.HasField("error"))
+        {
+            Debug.Log("Error: " + jsonObj.GetField("error"));
+            yield break;
+        }
+
+        Callback();
     }
     #endregion
 

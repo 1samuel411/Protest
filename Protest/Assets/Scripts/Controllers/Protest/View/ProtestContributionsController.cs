@@ -45,6 +45,7 @@ public class ProtestContributionsController : Controller
         // Populate List
         for (int i = 0; i < contributionsData.Length; i++)
         {
+            PoolManager.instance.SetPath(3);
             if (contributionsData[i] == null)
                 return;
 

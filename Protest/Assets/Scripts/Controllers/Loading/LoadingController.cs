@@ -118,6 +118,53 @@ public class LoadingController : Controller
 #if UNITY_ANDROID
         OnStartTrackingLocation();
 #endif
+#if UNITY_IOS
+        StartCoroutine(GetLocationIOS());
+#endif
+#if UNITY_EDITOR
+        Authentication.location.x = 0;
+        Authentication.location.y = 0;
+        ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, LoadCallback);
+#endif
+    }
+
+    IEnumerator GetLocationIOS()
+    {
+        // Start service before querying location
+        Input.location.Start();
+
+        // Wait until service initializes
+        int maxWait = 20;
+        while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
+        {
+            yield return new WaitForSeconds(1);
+            maxWait--;
+        }
+
+        // Service didn't initialize in 20 seconds
+        if (maxWait < 1)
+        {
+            print("Timed out");
+            yield break;
+        }
+
+        // Connection has failed
+        if (Input.location.status == LocationServiceStatus.Failed)
+        {
+            print("Unable to determine device location");
+            yield break;
+        }
+        else
+        {
+            // Access granted and location value could be retrieveds
+            Debug.Log("Our location is: " + Input.location.lastData.latitude + ", " + Input.location.lastData.longitude);
+            Authentication.location.x = (float)Input.location.lastData.latitude;
+            Authentication.location.y = (float)Input.location.lastData.longitude;
+            ProtestListController.instance.Load(Authentication.location.x, Authentication.location.y, LoadCallback);
+        }
+
+        // Stop service if there is no need to query location updates continuously
+        Input.location.Stop();
     }
 
 #if UNITY_ANDROID
