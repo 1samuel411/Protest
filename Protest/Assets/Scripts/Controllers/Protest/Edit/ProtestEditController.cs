@@ -2,8 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_ANDROID
 using DeadMosquito.AndroidGoodies;
+#endif
+#if UNITY_IOS
 using DeadMosquito.IosGoodies;
+#endif
 
 using ImageAndVideoPicker;
 using System.Linq;
@@ -170,7 +174,7 @@ public class ProtestEditController : Controller
             Return();
             return;
         }
-        Popup.Create("Delete", "Are you sure you want to delete this protest? To undo this action, contact us.", DeleteCallback, "Popup", "Yes", "No");
+        Popup.Create("Delete", "Are you sure you want to delete this protest? All chat data, likes, and attendees will be lost forever.", DeleteCallback, "Popup", "Yes", "No");
     }
 
     void DeleteCallback(int response)

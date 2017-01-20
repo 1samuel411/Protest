@@ -33,8 +33,7 @@ public class ProtestListObjectView : View
 
         locationText.text = locationTextNew;
         _time = DataParser.ParseDate(newModel.date);
-        _time = _time.ToLocalTime();
-        dateText.text = _time.DayOfWeek + ", " + _time.ToShortDateString() + "\n" + _time.ToShortTimeString();
+        dateText.text = _time.DayOfWeek + ", " + _time.ToShortDateString() + "\n" + _time.ToString("h:m tt");
 
         goingText.text = DataParser.GetCount(protestToDisplay.goingCount);
         likesText.text = DataParser.GetCount(newModel.likesCount);

@@ -56,7 +56,7 @@ public class ProtestInfoController : Controller
             Log.Create(1, "Other Report Sent", "ProtestViewController");
             DataParser.SendReportProtest(_reportProtest.index, "Other", CallbackReportProtest);
         }
-        if (response != 0)
+        if (response > 0)
         {
             SpinnerController.instance.Show();
         }
@@ -70,7 +70,7 @@ public class ProtestInfoController : Controller
 
     public void ViewProtestImage()
     {
-        ImageViewController.instance.Show(_view.protestImage.sprite, this);
+        ImageViewController.instance.Show(_view.protestImage.sprite, ProtestController.instance);
     }
 
     public void AddToCalender()

@@ -11,6 +11,9 @@ using DeadMosquito.AndroidGoodies;
 using UnityEditor;
 #endif
 
+using Firebase.Auth;
+using Firebase;
+
 public class LoadingController : Controller
 {
 
@@ -70,7 +73,21 @@ public class LoadingController : Controller
 
     private void CallbackGoogle()
     {
+        Firebase.Auth.FirebaseAuth auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
+        Firebase.Auth.FirebaseUser user = auth.CurrentUser;
+        if (user != null)
+        {
+            string name = user.DisplayName;
+            string email = user.Email;
+            string picture = user.PhotoUrl.AbsolutePath;
+            // The user's ID, unique to the Firebase project.
+            // Do NOT use this value to authenticate with your backend server,
+            // if you have one. Use User.Token() instead.
+            string uid = user.UserId;
+            string refreshToken = user.RefreshToken;
 
+            Debug.Log("name: " + name + ", email: " + email + ", picture: " + picture + ", uid: " + uid + ", refreshToken: " + refreshToken);
+        }
     }
 
     private void CallbackFacebook(ILoginResult result)
@@ -109,14 +126,86 @@ public class LoadingController : Controller
     {
         Authentication.RefreshUserModel(null);
         _View.loading = true;
+        GetPermissions();
+    }
+
+    void GetPermissions()
+    {
+#if UNITY_EDITOR
         GetLocation();
+        return;
+#endif
+#if UNITY_IOS
+        GetLocation();
+        return;
+#endif
+        // Don't forget to also add the permissions you need to manifest!
+        var permissions = new[]
+        {
+            AGPermissions.READ_EXTERNAL_STORAGE,
+            AGPermissions.ACCESS_FINE_LOCATION,
+            AGPermissions.READ_CALENDAR
+        };
+
+        // Filter permissions so we don't request already granted permissions,
+        // otherwise if the user denies already granted permission the app will be killed
+        var nonGrantedPermissions = permissions.ToList().Where(x => !AGPermissions.IsPermissionGranted(x)).ToArray();
+
+        if (nonGrantedPermissions.Length == 0)
+        {
+            Debug.Log("User already granted all these permissions: " + string.Join(",", permissions));
+            GetLocation();
+            return;
+        }
+
+        // Finally request permissions user has not granted yet and log the results
+        AGPermissions.RequestPermissions(permissions, results =>
+        {
+            // Process results of requested permissions
+            foreach (var result in results)
+            {
+                Debug.Log(string.Format("Permission [{0}] is [{1}], should show explanation?: {2}",
+                    result.Permission, result.Status, result.ShouldShowRequestPermissionRationale));
+                if (result.Status == AGPermissions.PermissionStatus.Denied)
+                {
+                    // User denied permission, now we need to find out if he clicked "Do not show again" checkbox
+                    if (result.ShouldShowRequestPermissionRationale)
+                    {
+                        PermissionCanceled();
+                    }
+                    else
+                    {
+                        PermissionCanceled(false);
+                    }
+                    return;
+                }
+            }
+        });
+    }
+
+    private bool showAgain = true;
+    void PermissionCanceled(bool showAgain = true)
+    {
+        this.showAgain = showAgain;
+        Popup.Create("Required", "We require these permissions for Protest to function.\nPlease read our privacy statement for more information.", ResponsePermissionCanceled, "Popup", "Okay");
+    }
+
+    void ResponsePermissionCanceled(int response)
+    {
+        if (this.showAgain == false)
+        {
+            Authentication.Logout();
+            AGSettings.OpenApplicationDetailsSettings("com.ProtestChange.Protest");
+        }
+        else
+            GetPermissions();
     }
 
     void GetLocation()
     {
         Debug.Log("Getting coordinates!");
 #if UNITY_ANDROID
-        OnStartTrackingLocation();
+        GetLocationAndroid();
 #endif
 #if UNITY_IOS
         StartCoroutine(GetLocationIOS());
@@ -168,12 +257,17 @@ public class LoadingController : Controller
     }
 
 #if UNITY_ANDROID
-    public void OnStartTrackingLocation()
+    public void GetLocationAndroid()
     {
-        AGGPS.RequestLocationUpdates(100, 600, OnLocationChanged);
+        if(AGGPS.DeviceHasGPS() == false || AGGPS.GetLastKnownGPSLocation() == null)
+        {
+            Popup.Create("GPS Error", "The GPS function is either missing or disabled and no previous location could be found. Setting location to 0, 0, please enable and restart the app with the GPS enabled to get the closest Protests.", null, "Popup", "Okay");
+            return;
+        }
+        GetLocationAndroidFinal(AGGPS.GetLastKnownGPSLocation());
     }
 
-    private void OnLocationChanged(AGGPS.Location location)
+    private void GetLocationAndroidFinal(AGGPS.Location location)
     {
         Debug.Log("Our location is: " + location.Latitude + ", " + location.Longitude);
         Authentication.location.x = (float)location.Latitude;

@@ -5,6 +5,8 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Facebook.Unity;
+using Firebase.Auth;
+using Firebase;
 
 public class Authentication : Base
 {
@@ -55,8 +57,8 @@ public class Authentication : Base
             return;
 
         completeFB = true;
-        
-        if(FB.IsLoggedIn)
+
+        if (FB.IsLoggedIn)
         {
             Debug.Log("Login Success!");
             Authentication.Authenticate(AccessToken.CurrentAccessToken.UserId, AccessToken.CurrentAccessToken.TokenString, Authentication.LoginType.Facebook, "", "", "", "", AccessToken.CurrentAccessToken.UserId, "", "");
@@ -80,7 +82,7 @@ public class Authentication : Base
         WWW www = new WWW(DataParser.URL);
         yield return www;
 
-        if(!String.IsNullOrEmpty(www.error))
+        if (!String.IsNullOrEmpty(www.error))
         {
             responded = false;
             UnAuthenticate();
@@ -93,7 +95,7 @@ public class Authentication : Base
     void ResponsePopup(int response)
     {
         responded = true;
-        switch(response)
+        switch (response)
         {
             case 1:
                 Debug.Log("Reconnecting");
@@ -122,12 +124,25 @@ public class Authentication : Base
         string[] permissions = new string[] { "public_profile", "email" };
         FB.LogInWithReadPermissions(permissions, CallbackFacebook);
     }
-    
-    public static void Login_Google(Action callback)
+
+    public static void Login_Google(Action Callback)
     {
         Log.Create(0, "Login to google event", "Authentication");
+
+        string access_token = "";
+        string id = "986642287699-bgp9v87i7vq9nbdst279a43ap8afhjq8.apps.googleusercontent.com";
+        FirebaseAuth firebaseAuth = FirebaseAuth.DefaultInstance;
         // Login to google and return the key to call the authenticate method
-        
+        Credential credential = GoogleAuthProvider.GetCredential(id, access_token);
+        firebaseAuth.SignInWithCredentialAsync(credential).ContinueWith(task =>
+        {
+            if (task.IsCompleted && !task.IsCanceled && !task.IsFaulted)
+            {
+                // User is now signed in.
+                Firebase.Auth.FirebaseUser newUser = task.Result;
+                Callback();
+            }
+        });
     }
 
     public enum LoginType {  Google, Facebook  };
@@ -151,7 +166,9 @@ public class Authentication : Base
 
     public static void Logout()
     {
-        if(FB.IsLoggedIn)
+        Firebase.Auth.FirebaseAuth auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
+        auth.SignOut();
+        if (FB.IsLoggedIn)
         {
             FB.LogOut();
         }

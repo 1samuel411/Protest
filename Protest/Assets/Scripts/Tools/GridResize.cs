@@ -38,12 +38,10 @@ public class GridResize : Base
         UpdateVariables();
     }
 
-#if UNITY_EDITOR
     void Update()
     {
         UpdateVariables();
     }
-#endif
 
     void UpdateVariables()
     {

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -23,17 +24,32 @@ public class ProtestChatController : Controller
     public bool canChat = true;
     public void SendChat(string chat)
     {
+        if (ProtestController.instance.GetModel().active == false)
+            return;
+
         if (!canChat)
             return;
         DataParser.SendChat(ProtestController.instance.GetModel().index, chat, SendChatCallback);
         StartCoroutine(ChatCooldown());
         loading = true;
-        DataParser.GetChats(ProtestController.instance.GetModel().index, GetChatsCallback);
+        ChatModel[] models = new ChatModel[1];
+        ChatModel model = new ChatModel();
+        model.index = currentIndex;
+        currentIndex--;
+        model.user = Authentication.userIndex;
+        model.body = chat;
+        model.name = Authentication.userModel.name;
+        model.time = DataParser.UnparseDate(DateTime.Now);
+        models[0] = model;
+        GetChatsCallback(oldChatData.Union(models).ToArray());
+        loading = true;
     }
+    private int currentIndex = 0;
 
     void SendChatCallback()
     {
         Debug.Log("Sent chat callback");
+        loading = false;
     }
 
     WaitForSeconds seconds = new WaitForSeconds(1.5f);
@@ -50,6 +66,8 @@ public class ProtestChatController : Controller
     public void PopulateFromServer()
     {
         PoolManager.instance.SetPath(4);
+        PoolManager.instance.Clear();
+        PoolManager.instance.SetPath(5);
         PoolManager.instance.Clear();
 
         _view.ChangeUI();
@@ -68,16 +86,25 @@ public class ProtestChatController : Controller
             return;
         if (!ProtestChatController.instance.view.gameObject.activeInHierarchy)
             return;
+        if (ProtestController.instance.GetModel().active == false)
+            return;
 
         loading = true;
         DataParser.GetChats(ProtestController.instance.GetModel().index, GetChatsCallback);
     }
 
+    public PoolObject createdPoolObjChat;
+
     HashSet<int> oldChatHash;
     void GetChatsCallback(ChatModel[] models)
     {
+        if (createdPoolObjChat != null)
+        {
+            createdPoolObjChat.Hide();
+            createdPoolObjChat = null;
+        }
+
         loading = false;
-        Debug.Log("Chats gotten: " + models.Length);
         oldChatHash = new HashSet<int>(oldChatData.Select(x => x.index));
         chatData = models.Where(x => !oldChatHash.Contains(x.index)).ToArray();
         oldChatData = models;
@@ -95,8 +122,7 @@ public class ProtestChatController : Controller
     {
         if (chatData == null)
             return;
-        PoolManager.instance.SetPath(4);
-
+        
         Log.Create(1, "Populating List", "ProtestChatsController");
         
         // Populate List
@@ -106,7 +132,7 @@ public class ProtestChatController : Controller
             
             if(firstRun)
             {
-                if(i > 0)
+                if (i > 0)
                 {
                     if(chatData[i].user == oldChatData[i - 1].user)
                     {
@@ -117,11 +143,18 @@ public class ProtestChatController : Controller
             }
             else
             {
-                if (chatData[i].user == oldChatData[chatData.Length - i].user)
+                if (oldChatData.Length > 1)
                 {
-                    _data = _view.listHolder.GetChild(i).GetComponent<ChatListsObjectView>();
-                    _data.AddBody(chatData[i].body);
-                    continue;
+                    if (chatData[i].user == oldChatData[chatData.Length - i].user)
+                    {
+                        _data = _view.listHolder.GetChild(i).GetComponent<ChatListsObjectView>();
+                        if(chatData[i].index <= 0)
+                            createdPoolObjChat = _data.AddBody(chatData[i].body);
+                        else
+                            _data.AddBody(chatData[i].body);
+
+                        continue;
+                    }
                 }
             }
 
@@ -131,6 +164,11 @@ public class ProtestChatController : Controller
             _data = _obj.GetComponent<ChatListsObjectView>();
             _data.ChangeInfo(chatData[i]);
             _data.AddBody(chatData[i].body);
+
+            if(chatData[i].index <= 0)
+            {
+                createdPoolObjChat = _obj;
+            }
         }
         firstRun = false;
     }

@@ -14,7 +14,8 @@ namespace ProtestBackend.Controllers.Locations
 {
     public class LocationController : Controller
     {
-        public string GEOCODINGAPI = "GeocodingAPI";
+        public const string GEOCODINGAPI = "GeocodingAPI";
+        public const string GEOCODINGAPITimeZone = "GeocodingAPIZones";
 
         // GET: Location
         // POST: Location

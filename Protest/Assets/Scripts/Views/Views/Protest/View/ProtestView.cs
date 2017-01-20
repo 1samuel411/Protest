@@ -163,6 +163,12 @@ public class ProtestView : View
         {
             setGoingButton.gameObject.SetActive(false);
         }
+
+        if (protestModel.active == false)
+        {
+            goingButton.gameObject.SetActive(false);
+            likeButton.gameObject.SetActive(false);
+        }
     }
 
     public void SetSelection(int index)

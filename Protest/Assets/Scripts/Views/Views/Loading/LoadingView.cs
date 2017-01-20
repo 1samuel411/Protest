@@ -47,4 +47,14 @@ public class LoadingView : View
         Log.Create(0, "Logging into google...", "LoadingView");
         LoadingController.instance.LoginGoogle();
     }
+
+    public void OpenTerms()
+    {
+        Popup.Create("In-Progress", "This app is still in progress and no legal documents have been created yet", null, "Popup", "Okay");
+    }
+
+    public void OpenPrivacyStatement()
+    {
+        Popup.Create("In-Progress", "This app is still in progress and no legal documents have been created yet", null, "Popup", "Okay");
+    }
 }

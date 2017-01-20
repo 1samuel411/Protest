@@ -5,7 +5,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 using ImageAndVideoPicker;
+#if UNITY_ANDROID
 using DeadMosquito.AndroidGoodies;
+#endif
+#if UNITY_IOS
+using DeadMosquito.IosGoodies;
+#endif
 using System.Linq;
 using Facebook.Unity;
 using System.Text.RegularExpressions;
@@ -1366,7 +1371,7 @@ public class DataParser : Base
         {
             Debug.Log("Error: " + jsonObj.GetField("error"));
             SpinnerController.instance.Hide();
-            Popup.Create("Unknown", "The address or location entered was unable to be found, please try again, perhaps be more specific?", null);
+            Popup.Create("Unknown", "The address or location entered was unable to be found, please try again, perhaps be more specific?", null, "Popup", "Okay");
             yield break;
         }
 

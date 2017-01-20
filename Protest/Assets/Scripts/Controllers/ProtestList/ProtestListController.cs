@@ -2,8 +2,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_ANDROID
 using DeadMosquito.AndroidGoodies;
+#endif
+#if UNITY_IOS
 using DeadMosquito.IosGoodies;
+#endif
 using UnityEngine;
 
 public class ProtestListController : Controller

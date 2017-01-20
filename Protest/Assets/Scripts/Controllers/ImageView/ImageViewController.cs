@@ -29,7 +29,7 @@ public class ImageViewController : Controller
     {
         this.previousController = previousController;
         previousController.Hide();
-        view.gameObject.SetActive(true);
+        base.Show();
         _view.SetImage(spriteToShow);
     }
 

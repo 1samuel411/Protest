@@ -32,6 +32,15 @@ public class ContributionsListsObjectView : View
         RemoveButton.onClick.AddListener(() => { Interact(model); });
 
         progress.text = model.currentAmount + "/" + model.amountNeeded;
+
+        if(ProtestController.instance.GetModel().active == false)
+        {
+            AddButton.gameObject.SetActive(true);
+            RemoveButton.gameObject.SetActive(false);
+            AddButton.interactable = false;
+        }
+        else
+            AddButton.interactable = false;
     }
 
     public void Add()

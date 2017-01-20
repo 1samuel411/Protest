@@ -16,6 +16,8 @@ public class ChatModel : Model
 
     public ChatModel(JSONObject jsonObj)
     {
+        if (jsonObj == null)
+            return;
         if (jsonObj.HasField("id") == false)
         {
             return;
@@ -32,5 +34,15 @@ public class ChatModel : Model
 
         if (jsonObj.HasField("picture"))
             picture = jsonObj.GetField("picture").str;
+    }
+
+    public ChatModel()
+    {
+        index = 0;
+        body = "";
+        user = 0;
+        name = "";
+        time = "";
+        protest = 0;
     }
 }

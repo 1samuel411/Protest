@@ -46,12 +46,10 @@ public class ChatBoxGrid : Base
         UpdateVariables();
     }
 
-#if UNITY_EDITOR
     void Update()
     {
         UpdateVariables();
     }
-#endif
 
     float previousSize = 0;
     float newSize = 0;

@@ -68,6 +68,11 @@ public class ProtestContributionsController : Controller
 
     public void Donate(float amount)
     {
+        if (ProtestController.instance.GetModel().active == false)
+        {
+            Popup.Create("Finished", "The Protest you are donating to has expired", null, "Popup", "Okay");
+            return;
+        }
         if (amount <= 0)
             return;
 

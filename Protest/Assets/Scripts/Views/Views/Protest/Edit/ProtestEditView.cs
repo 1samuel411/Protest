@@ -132,7 +132,7 @@ public class ProtestEditView : View
         else
         {
             System.DateTime newTime = DataParser.ParseDate(ProtestEditController.instance.model.date);
-            dateText.text = newTime.DayOfWeek + ", " + newTime.ToShortDateString() + "\n" + newTime.ToString("hh:mm tt");
+            dateText.text = newTime.DayOfWeek + ", " + newTime.ToShortDateString() + " " + newTime.ToString("hh:mm tt");
         }
 
         if (ProtestEditController.instance.model.location == "")

@@ -45,8 +45,8 @@ public class ProtestInfoView : View
         locationText.text = model.location;
         if (model.date != "")
         {
-            System.DateTime newTime = DataParser.ParseDate(model.date).ToLocalTime();
-            dateText.text = newTime.DayOfWeek + ", " + newTime.ToShortDateString() + "\n" + newTime.ToString("hh:mm tt");
+            System.DateTime newTime = DataParser.ParseDate(model.date);
+            dateText.text = newTime.DayOfWeek + ", " + newTime.ToShortDateString() + "\n" + newTime.ToString("h:m tt");
         }
         else
             dateText.text = "Set Date";
@@ -56,6 +56,7 @@ public class ProtestInfoView : View
         if (!model.active)
         {
             editButton.gameObject.SetActive(false);
+            userButton.gameObject.SetActive(true);
         }
 
         int[] me = new int[1];

@@ -37,6 +37,7 @@ public class ProfileViewController : Controller
     {
         SpinnerController.instance.Show();
         _previousController = previousController;
+        _previousController.Hide();
         DataParser.GetUser(userModel, GetUserCallback);
     }
 
@@ -76,7 +77,7 @@ public class ProfileViewController : Controller
 
     void CallbackReport(int response)
     {
-        if(response != 0)
+        if(response > 0)
             SpinnerController.instance.Show();
 
         if (response == 1)

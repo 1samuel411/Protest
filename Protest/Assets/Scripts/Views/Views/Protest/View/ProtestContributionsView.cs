@@ -32,7 +32,7 @@ public class ProtestContributionsView : View
 
     public void ChangeUI()
     {
-        moneyRaisedText.text = "$" + ProtestController.instance.GetModel().donationCurrent.ToString() + "/" + ProtestController.instance.GetModel().donationTarget.ToString();
+        moneyRaisedText.text = "$" + ProtestController.instance.GetModel().donationCurrent.ToString() + " out of $" + ProtestController.instance.GetModel().donationTarget.ToString() + " raised";
     }
 
     public void ChangeDonationAmount(string input)

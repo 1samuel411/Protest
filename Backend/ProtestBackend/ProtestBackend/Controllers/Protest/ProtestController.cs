@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ProtestBackend.Controllers.Locations;
 using ProtestBackend.DAL;
 using ProtestBackend.DLL;
 using ProtestBackend.Models;
@@ -6,9 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
 
 namespace ProtestBackend.Controllers.Protest
@@ -181,9 +185,33 @@ namespace ProtestBackend.Controllers.Protest
                     {
                         ProtestModel protest = new ProtestModel(table.Rows[0]);
 
+                        // Check expiration date
                         if (protest.active)
                         {
-                            if (Parser.ParseDate(protest.date) <= (DateTime.UtcNow.AddHours(-2)))
+                            DateTime check = Parser.ParseDate(protest.date);
+                            var request = WebRequest.Create(string.Format("https://maps.googleapis.com/maps/api/timezone/json?location={0},{1}&timestamp={2}&key={3}", Uri.EscapeDataString(protest.latitude.ToString()), Uri.EscapeDataString(protest.longitude.ToString()), Uri.EscapeDataString(Parser.ConvertToTimestamp(check).ToString()),Uri.EscapeDataString(WebConfigurationManager.AppSettings[LocationController.GEOCODINGAPITimeZone]))) as HttpWebRequest;
+                            string responseContent = null;
+
+                            try
+                            {
+                                using (var response = request.GetResponse() as HttpWebResponse)
+                                {
+                                    using (var reader = new StreamReader(response.GetResponseStream()))
+                                    {
+                                        responseContent = reader.ReadToEnd();
+                                    }
+                                }
+                            }
+                            catch (WebException ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine(ex.Message);
+                                return Content(Error.Create("Invalid request.."));
+                            }
+
+                            dynamic Data = JsonConvert.DeserializeObject(responseContent);
+                            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(Data.timeZoneName.ToString());
+                            TimeZoneInfo.ConvertTime(check, zone);
+                            if (check.ToUniversalTime() <= (DateTime.UtcNow.AddHours(-2)))
                             {
                                 protest.active = false;
                                 int response = ConnectionManager.CreateCommand("UPDATE Protests SET active='False' WHERE id=" + protest.index);
@@ -729,6 +757,17 @@ namespace ProtestBackend.Controllers.Protest
             int responseDelete = ConnectionManager.CreateCommand(command);
             if (responseDelete >= 1)
             {
+                // Remove from Going and Likes and Chats
+                command = new SqlCommand("DELETE FROM Going WHERE protestId=" + indexint);
+                responseDelete = ConnectionManager.CreateCommand(command);
+                command = new SqlCommand("DELETE FROM Likes WHERE protestId=" + indexint);
+                responseDelete = ConnectionManager.CreateCommand(command);
+                command = new SqlCommand("DELETE FROM Chats WHERE protest=" + indexint);
+                responseDelete = ConnectionManager.CreateCommand(command);
+                command = new SqlCommand("DELETE FROM Chats WHERE protest=" + indexint);
+                responseDelete = ConnectionManager.CreateCommand(command);
+                command = new SqlCommand("DELETE FROM Notifications WHERE Type='Protest' AND targetIndex=" + indexint);
+                responseDelete = ConnectionManager.CreateCommand(command);
                 return Content(Success.Create("Successfully deleted to the protest"));
             }
             else
