@@ -232,11 +232,6 @@ public class ListController : Controller
 
         Log.Create(1, "Populating List", "ListController");
         
-        
-        // Update Button
-        _view.pageForwardButton.interactable = (listIndex <= _pageLength - 1);
-        _view.pageBackButton.interactable = (listIndex > 1);
-
         SpinnerController.instance.Show();
 
         if (_pageLength <= 0 || listIndex >= _pageLength)
@@ -284,6 +279,10 @@ public class ListController : Controller
 
     private void PopulateWithAtlas(Texture2D _atlas)
     {
+        // Update Button
+        _view.pageForwardButton.interactable = (listIndex <= _pageLength - 1);
+        _view.pageBackButton.interactable = (listIndex > 1);
+
         SpinnerController.instance.Hide();
 
         // Clear
