@@ -156,6 +156,8 @@ public class Authentication : Base
 
     private static void ResponseAuthenticate(string sessionToken, int newId, LoginType loginType)
     {
+        OneSignal.SetSubscription(true);
+
         authenticated = true;
         auth_token = sessionToken;
         userIndex = newId;
@@ -172,7 +174,7 @@ public class Authentication : Base
         {
             FB.LogOut();
         }
-        OneSignal.SendTag("identification", "-1");
+        OneSignal.SetSubscription(false);
         authenticated = false;
         LoadingController.instance._View.loading = false;
         Log.Create(2, "Logging out", "Authentication");

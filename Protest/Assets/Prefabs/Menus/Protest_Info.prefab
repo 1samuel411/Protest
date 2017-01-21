@@ -3748,6 +3748,7 @@ MonoBehaviour:
   moneyView: {fileID: 1639542354392036}
   donationField: {fileID: 114559912538374094}
   moneyRaisedText: {fileID: 114445677414347174}
+  contributionsInfoText: {fileID: 114879184928853810}
 --- !u!114 &114382156340129294
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -5648,8 +5649,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 114562549707137710}
   m_HandleRect: {fileID: 224515400014903068}
   m_Direction: 0
-  m_Value: 1
-  m_Size: 0.99999994
+  m_Value: 0
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7499,7 +7500,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000015258789}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: -430}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!224 &224101263175413824
@@ -7801,7 +7802,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00004761923, y: 0.000015258789}
+  m_AnchoredPosition: {x: 0.00004761923, y: 0}
   m_SizeDelta: {x: -10, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!224 &224304024691001362

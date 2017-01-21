@@ -33,8 +33,6 @@ public class LoadingController : Controller
         OneSignal.StartInit("a7227cd5-532a-4b87-9dd0-080dfda19ab2")
         .HandleNotificationOpened(HandleNotificationOpened)
         .EndInit();
-
-        OneSignal.SetSubscription(true);
     }
 
     // Gets called when the player opens the notification.

@@ -12,6 +12,7 @@ public class ProtestContributionsView : View
     public InputField donationField;
 
     public Text moneyRaisedText;
+    public Text contributionsInfoText;
 
     private string _donationAmount;
     public string donationAmount
@@ -33,6 +34,15 @@ public class ProtestContributionsView : View
     public void ChangeUI()
     {
         moneyRaisedText.text = "$" + ProtestController.instance.GetModel().donationCurrent.ToString() + " out of $" + ProtestController.instance.GetModel().donationTarget.ToString() + " raised";
+
+        if(ProtestController.instance.ourProtest)
+        {
+            contributionsInfoText.text = "Cannot contribute to your protest";
+        }
+        else
+        {
+            contributionsInfoText.text = "Contributions are not set up";
+        }
     }
 
     public void ChangeDonationAmount(string input)
