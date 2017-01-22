@@ -209,7 +209,8 @@ namespace ProtestBackend.Controllers.Protest
                             }
 
                             dynamic Data = JsonConvert.DeserializeObject(responseContent);
-                            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(Data.timeZoneName.ToString());
+                            string timeZoneId = Data.timeZoneId.ToString();
+                            TimeZoneInfo zone = TimeZoneInfo.FindSystemTimeZoneById(Parser.IanaToWindows(timeZoneId));
                             TimeZoneInfo.ConvertTime(check, zone);
                             if (check.ToUniversalTime() <= (DateTime.UtcNow.AddHours(-2)))
                             {
