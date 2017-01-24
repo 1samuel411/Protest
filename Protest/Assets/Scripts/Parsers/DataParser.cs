@@ -311,38 +311,18 @@ public class DataParser : Base
         Debug.Log("Error: No texture found!");
     }
     
-    public static void SetSprite(Image image, string url, int size = 128)
-    {
-        behaviour.StartCoroutine(GetSpriteLoader(image, url, size));
-    }
-
-    private static IEnumerator GetSpriteLoader(Image image, string url, int size)
-    {
-        WWW www = new WWW(url);
-
-        yield return www;
-
-        if (www.texture)
-        {
-            image.sprite = Sprite.Create(www.texture, new Rect(0, 0, size, size), Vector2.zero);
-        }
-    }
-
     public static void SetSprite(string url, Action<Sprite> CallbackSprite, int size = 128)
     {
-        behaviour.StartCoroutine(GetSpriteLoader(url, CallbackSprite, size));
+        LeanLoader.load(url, new LLOptions().setUseFile(true).setUseCache(true).setCacheLife(60 * 60 * 24 * 12).setOnLoad((Texture2D tex) => 
+        {
+            //tex.SetPixels(x.GetPixels());
+            CallbackSprite(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero));
+        }).setOnError(OnErrorCallback));
     }
 
-    private static IEnumerator GetSpriteLoader(string url, Action<Sprite> callback, int size)
+    private static void OnErrorCallback(string error)
     {
-        WWW www = new WWW(url);
-
-        yield return www;
-
-        if (www.texture)
-        {
-            callback(Sprite.Create(www.texture, new Rect(0, 0, size, size), Vector2.zero));
-        }
+        Debug.Log("Error getting image ------------------------ " + error);
     }
     #endregion
 

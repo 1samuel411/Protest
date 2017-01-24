@@ -35,7 +35,7 @@ public class ProtestInfoView : View
         editButton.onClick.RemoveAllListeners();
         editButton.onClick.AddListener(() => { ProtestEditController.instance.Show(model.index, ProtestController.instance); });
 
-        DataParser.SetSprite(protestImage, model.protestPicture);
+        DataParser.SetSprite(model.protestPicture, GetSpriteCallback);
 
         nameText.text = model.name;
 
@@ -62,6 +62,11 @@ public class ProtestInfoView : View
         int[] me = new int[1];
         me[0] = model.userCreated;
         DataParser.GetUsers(me, "", Callback);
+    }
+
+    void GetSpriteCallback(Sprite sprite)
+    {
+        protestImage.sprite = sprite;
     }
 
     void Callback(UserModel[] users)

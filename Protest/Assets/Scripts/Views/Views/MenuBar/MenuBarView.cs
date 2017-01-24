@@ -29,7 +29,7 @@ public class MenuBarView : View
     {
         userToDisplay = userModel;
 
-        DataParser.SetSprite(profileImage, userToDisplay.profilePicture);
+        DataParser.SetSprite(userToDisplay.profilePicture, GetSpriteCallback);
 
         nameText.text = userToDisplay.name;
         bioText.text = userToDisplay.bio;
@@ -45,6 +45,11 @@ public class MenuBarView : View
 
         followingButton.onClick.AddListener(FollowingCallback);
         followingText.text = DataParser.GetCount(userToDisplay.following.Length);
+    }
+
+    void GetSpriteCallback(Sprite sprite)
+    {
+        profileImage.sprite = sprite;
     }
 
     private void ProtestsAttendedCallback()

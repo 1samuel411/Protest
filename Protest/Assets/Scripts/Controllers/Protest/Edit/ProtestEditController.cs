@@ -68,13 +68,18 @@ public class ProtestEditController : Controller
         this.model = model;
         if (!String.IsNullOrEmpty(model.protestPicture))
         {
-            DataParser.SetSprite(_view.iconImage, model.protestPicture);
+            DataParser.SetSprite(model.protestPicture, GetSpriteCallback);
         }
         _view.ChangeUI();
         _returnController.Hide();
         creating = false;
         PopulateList();
         Show();
+    }
+
+    void GetSpriteCallback(Sprite sprite)
+    {
+        _view.iconImage.sprite = sprite;
     }
 
     public void Return()

@@ -12,6 +12,10 @@ public class ProtestGoingView : View
 
     public RectTransform listHolder;
 
+    public string searchInput;
+
+    public InputField searchInputField;
+
     public void PageBack()
     {
         ProtestGoingController.instance.PageBack();
@@ -20,5 +24,14 @@ public class ProtestGoingView : View
     public void PageForward()
     {
         ProtestGoingController.instance.PageForward();
+    }
+
+    public void SearchInput(string newInput)
+    {
+        if(newInput != searchInput)
+        {
+            searchInput = newInput;
+            ProtestGoingController.instance.listIndex = 1;
+        }
     }
 }

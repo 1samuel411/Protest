@@ -13,7 +13,7 @@ public class ProtestGoingController : Controller
     private UserModel[] usersData;
 
     private int _listIndex;
-    private int listIndex
+    public int listIndex
     {
         get
         {
@@ -53,23 +53,41 @@ public class ProtestGoingController : Controller
 
     public void PopulateFromServer()
     {
-        _beginIndex = 0;
-        _endIndex = 0;
-        
         SpinnerController.instance.Show();
         listIndex = 1;
 
         Log.Create(1, "Populating from server", "ProtestGoingController");
 
-        _pageLength = (ProtestController.instance.GetModel().going.Length / _pageSize) + 1;
+        _view.searchInputField.text = "";
+        _view.searchInput = "";
 
         PopulateList();
     }
 
     public void GetUsersCallback(UserModel[] userModels)
     {
-        if(userModels.Length <= 0)
+        _beginIndex = 0;
+        _endIndex = 0;
+
+        _pageLength = (userModels.Length / _pageSize) + 1;
+
+        if (_pageLength <= 0 || listIndex >= _pageLength)
+            _endIndex = userModels.Length;
+        else
+            _endIndex = _pageSize * listIndex;
+
+        _beginIndex = listIndex * _pageSize;
+        _beginIndex -= _pageSize;
+
+        // Update Button
+        _view.pageForwardButton.interactable = (listIndex <= _pageLength - 1);
+        _view.pageBackButton.interactable = (listIndex > 1);
+
+        if (userModels.Length <= 0)
         {
+            PoolManager.instance.SetPath(1);
+            PoolManager.instance.Clear();
+
             SpinnerController.instance.Hide();
             return;
         }
@@ -88,9 +106,10 @@ public class ProtestGoingController : Controller
     private int _pageSize = 32;
     public void PopulateList()
     {
-        // Clear
-        
-        Log.Create(1, "Populating List", "ProtestGoingController");
+        _beginIndex = 0;
+        _endIndex = 0;
+
+        _pageLength = (ProtestController.instance.GetModel().going.Length / _pageSize) + 1;
 
         if (_pageLength <= 0 || listIndex >= _pageLength)
             _endIndex = ProtestController.instance.GetModel().going.Length;
@@ -100,13 +119,11 @@ public class ProtestGoingController : Controller
         _beginIndex = listIndex * _pageSize;
         _beginIndex -= _pageSize;
 
-        // Update Button
-        _view.pageForwardButton.interactable = (listIndex <= _pageLength - 1);
-        _view.pageBackButton.interactable = (listIndex > 1);
-
+        Log.Create(1, "Populating List", "ProtestGoingController");
+        
         // Get Atlas for protests: _beginIndex to _endIndex
         SpinnerController.instance.Show();
-        DataParser.GetUsers(ProtestController.instance.GetModel().going.Skip(_beginIndex).Take(_endIndex).ToArray(), "", GetUsersCallback);
+        DataParser.GetUsers(ProtestController.instance.GetModel().going.Skip(_beginIndex).Take(_endIndex).ToArray(), _view.searchInput, GetUsersCallback);
     }
 
     private void PopulateWithAtlas(Texture2D _atlas)

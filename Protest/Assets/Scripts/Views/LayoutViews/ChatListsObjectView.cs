@@ -43,11 +43,16 @@ public class ChatListsObjectView : View
 
         if(!ours)
         {
-            DataParser.SetSprite(iconImage, model.picture);
+            DataParser.SetSprite(model.picture, GetSpriteIcon);
         }
 
         imageHolder.gameObject.SetActive(!ours);
         imageHolderBorder.gameObject.SetActive(!ours);
+    }
+
+    void GetSpriteIcon(Sprite sprite)
+    {
+        iconImage.sprite = sprite;
     }
 
     public RectTransform GetListHolder()

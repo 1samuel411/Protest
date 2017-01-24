@@ -57,7 +57,7 @@ public class ProfileView : View
         attendedText.text = DataParser.GetCount(userModel.protestsAttended.Length);
         createdText.text = DataParser.GetCount(userModel.protestsCreated.Length);
 
-        DataParser.SetSprite(profileImage, userModel.profilePicture);
+        DataParser.SetSprite(userModel.profilePicture, GetSpriteCallback);
         
         editButton.gameObject.SetActive((ours));
         editButton.onClick.RemoveAllListeners();
@@ -93,6 +93,11 @@ public class ProfileView : View
 
         twitterButton.onClick.RemoveAllListeners();
         twitterButton.onClick.AddListener(() => { ProfileViewController.instance.OpenTwitter(userModel.twitterUser); });
+    }
+
+    void GetSpriteCallback(Sprite sprite)
+    {
+        profileImage.sprite = sprite;
     }
     
     public void Return()

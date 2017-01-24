@@ -45,13 +45,13 @@ public class SearchListObjectView : View
         string text = "";
         TimeSpan span = DateTime.UtcNow - (DataParser.ParseDate(newsModel.notificationTime));
         if (span.Days > 0)
-            text = span.Days.ToString() + " days";
+            text = span.Days.ToString() + " day" + ((span.Days > 1) ? "s" : "");
         else if (span.Hours > 0)
-            text = span.Hours.ToString() + " hours";
+            text = span.Hours.ToString() + " hour" + ((span.Hours > 1) ? "s" : "");
         else if (span.Minutes > 0)
-            text = span.Minutes.ToString() + " minutes";
+            text = span.Minutes.ToString() + " minute" + ((span.Minutes > 1) ? "s" : "");
         else if (span.Seconds >= 0)
-            text = span.Seconds.ToString() + " seconds";
+            text = span.Seconds.ToString() + " second" + ((span.Seconds > 1) ? "s" : "");
         else
             text = span.ToString();
         dateText.text = text + " ago";
