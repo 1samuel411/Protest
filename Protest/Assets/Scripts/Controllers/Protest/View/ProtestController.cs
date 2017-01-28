@@ -86,7 +86,7 @@ public class ProtestController : Controller
     {
         Log.Create(0, "Opening Location View", "ProtestController");
 #if UNITY_IOS
-        const string address = _view.protestModel.location;
+        string address = _view.protestModel.location;
             IGMaps.OpenMapAddress(address, "_view.protestModel.name", IGMaps.MapViewType.Hybrid);
 #endif
 #if UNITY_ANDROID

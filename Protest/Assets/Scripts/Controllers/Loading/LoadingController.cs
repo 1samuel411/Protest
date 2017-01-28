@@ -137,6 +137,7 @@ public class LoadingController : Controller
         GetLocation();
         return;
 #endif
+#if UNITY_ANDROID
         // Don't forget to also add the permissions you need to manifest!
         var permissions = new[]
         {
@@ -179,8 +180,10 @@ public class LoadingController : Controller
                 }
             }
         });
+#endif
     }
 
+#if UNITY_ANDROID
     private bool showAgain = true;
     void PermissionCanceled(bool showAgain = true)
     {
@@ -198,6 +201,7 @@ public class LoadingController : Controller
         else
             GetPermissions();
     }
+#endif
 
     void GetLocation()
     {

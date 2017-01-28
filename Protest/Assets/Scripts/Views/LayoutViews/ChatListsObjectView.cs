@@ -37,7 +37,7 @@ public class ChatListsObjectView : View
         bgImage.color = (ours) ? ourColor : otherColor;
 
         DateTime nowTime = DataParser.ParseDate(model.time).ToLocalTime();
-        dateText.text = nowTime.ToShortDateString() + " " + nowTime.ToString("h:m tt");
+        dateText.text = nowTime.ToShortDateString() + " " + nowTime.ToString("h:mm tt");
 
         nameText.text = model.name;
 
