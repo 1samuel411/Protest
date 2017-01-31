@@ -185,10 +185,10 @@ namespace ProtestBackend.Controllers.Protest
                     {
                         ProtestModel protest = new ProtestModel(table.Rows[0]);
 
+                        DateTime check = Parser.ParseDate(protest.date);
                         // Check expiration date
                         if (protest.active)
                         {
-                            DateTime check = Parser.ParseDate(protest.date);
                             var request = WebRequest.Create(string.Format("https://maps.googleapis.com/maps/api/timezone/json?location={0},{1}&timestamp={2}&key={3}", Uri.EscapeDataString(protest.latitude.ToString()), Uri.EscapeDataString(protest.longitude.ToString()), Uri.EscapeDataString(Parser.ConvertToTimestamp(check).ToString()),Uri.EscapeDataString(WebConfigurationManager.AppSettings[LocationController.GEOCODINGAPITimeZone]))) as HttpWebRequest;
                             string responseContent = null;
 
@@ -229,6 +229,8 @@ namespace ProtestBackend.Controllers.Protest
                         protest.contributions = Parser.ParseColumnsToIntArray(table.Rows, 0);
 
                         protest.chats = new int[0];
+
+                        protest.date = Parser.UnparseDate(check);
 
                         string result = JsonConvert.SerializeObject(protest);
                         return Content(result);
